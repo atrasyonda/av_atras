@@ -39,7 +39,7 @@
     <!-- Spawn the controllers -->
     <node pkg="controller_manager" type="spawner" name="controller_spawner" args="joint_state_publisher ackermann_steering_controller" output="screen" respawn="false" if="$(eval model == 'ackermann')"/>
 
-    <node name="diff_to_ackermann" pkg="mpc_ros" type="diff_to_ackermann" output="screen" if="$(eval model == 'ackermann')"/>
+    <node name="diff_to_ackermann" pkg="av_atras" type="diff_to_ackermann" output="screen" if="$(eval model == 'ackermann')"/>
 
 
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">

@@ -23,6 +23,12 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   visualization_msgs
 )
+## Specify additional locations of header files
+## Your package locations should be listed before other locations
+
+include_directories( ${catkin_INCLUDE_DIRS} include )
+include_directories(/usr/include)
+link_directories(/usr/lib)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -128,6 +134,7 @@ catkin_package(
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/av_atras.cpp
 # )
+# diff to ackerman converter
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -137,6 +144,8 @@ catkin_package(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
+add_executable(diff_to_ackermann src/diff_to_ackermann.cpp)
+target_link_libraries(diff_to_ackermann ${catkin_LIBRARIES} )
 
 
 ## Rename C++ executable without prefix
