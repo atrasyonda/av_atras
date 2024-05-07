@@ -144,7 +144,7 @@
           <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
-              <uri>/home/avjaya/catkin_ws/src/mpc_ros/mpc_ros/map/custom/map.stl</uri>
+              <uri>/home/atras/ros/catkin_ws/src/av_atras/worlds/map.stl</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -171,7 +171,7 @@
           <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
-              <uri>/home/avjaya/catkin_ws/src/mpc_ros/mpc_ros/map/custom/map.stl</uri>
+              <uri>/home/atras/ros/catkin_ws/src/av_atras/worlds/map.stl</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
