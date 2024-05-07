@@ -25,6 +25,7 @@ ackermann_steering_controller:
 
     # Top level frame (link) of the robot description
     base_frame_id: 'base_footprint'
+    # base_frame_id: 'base_link'
 
     # Transform from odom -> base_link
     enable_odom_tf: false

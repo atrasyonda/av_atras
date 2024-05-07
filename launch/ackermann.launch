@@ -22,7 +22,6 @@
         <arg name="gui" value="$(arg gui)"/>
         <arg name="headless" value="false"/>
         <arg name="debug" value="false"/>
-        <!-- <env name="GAZEBO_MODEL_PATH" value="$(find mpc_ros)/map/custom" />  -->
     </include>
 
         <!-- Load ros_control controller configuration parameters -->
@@ -32,21 +31,26 @@
     <rosparam file="$(find av_atras)/config/ctrl_steer_bot_hardware_gazebo.yaml" command="load"/>
 
     <!--  ************** Robot model ***************  -->
-    <param name="robot_description" command="$(find xacro)/xacro.py $(find av_atras)/urdf/ackermann.urdf.xacro" if="$(eval model == 'ackermann')"/>
+    <param name="robot_description" command="$(find xacro)/xacro $(find av_atras)/urdf/ackermann.urdf.xacro" if="$(eval model == 'ackermann')"/>
     <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-urdf -model ackermann_bot -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -R $(arg roll) -P $(arg pitch) -Y $(arg yaw) -param robot_description" if="$(eval model == 'ackermann')"/>
       
       
     <!-- Spawn the controllers -->
     <node pkg="controller_manager" type="spawner" name="controller_spawner" args="joint_state_publisher ackermann_steering_controller" output="screen" respawn="false" if="$(eval model == 'ackermann')"/>
 
-    <node name="diff_to_ackermann" pkg="av_atras" type="diff_to_ackermann" output="screen" if="$(eval model == 'ackermann')"/>
+    <node pkg="av_atras" type="diff_to_ackermann" name="diff_to_ackermann_node" output="screen" if="$(eval model == 'ackermann')"/>
+
+
+    <!-- Launch a rqt steering GUI for publishing to ackermann_steering_controllesr/cmd_vel (KONTROL SCR MANUAL) -->
+    <node pkg="rqt_robot_steering" type="rqt_robot_steering" name="rqt_robot_steering" >
+        <param name="default_topic" value="/cmd_vel"/>
+    </node>
+
 
 
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
         <param name="publish_frequency" type="double" value="50.0" />
     </node>
-
-
 
 
     <!--  ************** Map **************  -->

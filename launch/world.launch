@@ -1,0 +1,31 @@
+<launch>
+    <!--  ************** Global Parameters ***************  -->
+    <param name="use_sim_time" value="true"/>
+    <arg name="controller"  default="mpc" doc="opt: dwa, mpc, pure_pursuit"/> 
+    <arg name="model"  default="ackermann"/>  
+    <arg name="tf_prefix"  default=""/> 
+
+    <!--  ************** GAZEBO Simulator ***************  -->
+    <arg name="x_pos" default="0.0"/>
+    <arg name="y_pos" default="0.0"/>
+    <arg name="z_pos" default="0.0"/>
+    <arg name="roll" default="0"/>
+    <arg name="pitch" default="0"/>
+    <arg name="yaw" default="-1.507"/>
+    <arg name="gui" default="true"/>
+
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <!-- <arg name="world_name" value="$(find av_atras)/worlds/map.world"/> -->
+        <arg name="world_name" value="$(find autonomous_vehicle)/worlds/$(arg model)_world.world"/> 
+        <arg name="paused" value="false"/>
+        <arg name="use_sim_time" value="true"/>
+        <arg name="gui" value="$(arg gui)"/>
+        <arg name="headless" value="false"/>
+        <arg name="debug" value="false"/>
+    </include>
+
+    <!--  ************** Robot model ***************  -->
+    <!-- <param name="robot_description" command="$(find xacro)/xacro $(find av_atras)/urdf/ackermann.urdf.xacro" if="$(eval model == 'ackermann')"/>
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-urdf -model ackermann_bot -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -R $(arg roll) -P $(arg pitch) -Y $(arg yaw) -param robot_description" if="$(eval model == 'ackermann')"/>
+    -->
+</launch>
