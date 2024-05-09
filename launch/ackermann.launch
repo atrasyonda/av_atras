@@ -2,7 +2,7 @@
 
     <!--  ************** Global Parameters ***************  -->
     <param name="use_sim_time" value="true"/>
-    <arg name="controller"  default="mpc" doc="opt: dwa, mpc, pure_pursuit"/> 
+    <arg name="controller"  default="mpc" doc="opt: dwa, mpc"/> 
     <arg name="model"  default="ackermann"/>  
     <arg name="tf_prefix"  default=""/> 
 
@@ -83,7 +83,6 @@
         <!-- Local Planner -->
         <rosparam file="$(find av_atras)/config/mpc_params.yaml" command="load" />
         <param name="base_local_planner" value="mpc_ros/MPCPlannerROS"  if="$(eval controller == 'mpc')"/>
-        <!-- <param name="base_local_planner" value="av_atras/MPCPlannerROS"  if="$(eval controller == 'mpc')"/> -->
         <!-- <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS"  if="$(eval controller == 'dwa')"/>     -->
         
     </node>
