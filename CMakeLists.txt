@@ -106,7 +106,7 @@ link_directories(/usr/lib)
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
 # dynamic reconfigure
-
+generate_dynamic_reconfigure_options(config/MPCPlanner.cfg)
 ###################################
 ## catkin specific configuration ##
 ###################################

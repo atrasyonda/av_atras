@@ -38,7 +38,8 @@
 #include <tf/transform_listener.h>
 #include <costmap_2d/costmap_2d_ros.h>
 #include <dynamic_reconfigure/server.h>
-#include <mpc_ros/MPCPlannerConfig.h>
+// #include <mpc_ros/MPCPlannerConfig.h>
+#include <av_atras/MPCPlannerConfig.h>
 
 #include "ros/ros.h"
 #include "mpc_plannner.h"

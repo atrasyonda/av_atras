@@ -119,70 +119,70 @@ void odom_callback(const nav_msgs::Odometry &odom_in)
     // // Publish the modified odometry message
 
     // pub_odom.publish(odom_out);
-   
-tf_msg.transforms.resize(1);
+    
+    tf_msg.transforms.resize(1);
 
-if (odom_out.header.stamp == ros::Time(0))
-{
-    odom_out = odom_in;
-    last_cmd_vel_time = odom_in.header.stamp;
-    return;
-}
+    if (odom_out.header.stamp == ros::Time(0))
+    {
+        odom_out = odom_in;
+        last_cmd_vel_time = odom_in.header.stamp;
+        return;
+    }
 
-// double wheel_radius = 0.1;
-// double wheel_separation_w = 0.4;
+    // double wheel_radius = 0.1;
+    // double wheel_separation_w = 0.4;
 
-// Update the odometry based on velocity commands
-double dt = (odom_in.header.stamp - last_cmd_vel_time).toSec();  // Calculate time since the last velocity command
-last_cmd_vel_time = odom_in.header.stamp;  // Update the last command time
+    // Update the odometry based on velocity commands
+    double dt = (odom_in.header.stamp - last_cmd_vel_time).toSec();  // Calculate time since the last velocity command
+    last_cmd_vel_time = odom_in.header.stamp;  // Update the last command time
 
-// ROS_INFO("Delta Time: %f", dt);
-// double linear_vel =  rear_wheel_speed ;
-// double linear_vel =  rear_wheel_speed + (rear_wheel_speed*sin(fabs(front_steer_angle)) * 0.3); //ok
-double linear_vel = (rear_left_wheel_speed+rear_right_wheel_speed)/2.0;
-double steering_angle = front_steer_angle;
-// double angular_vel =  linear_vel * tan(steering_angle) / 0.4;
+    // ROS_INFO("Delta Time: %f", dt);
+    // double linear_vel =  rear_wheel_speed ;
+    // double linear_vel =  rear_wheel_speed + (rear_wheel_speed*sin(fabs(front_steer_angle)) * 0.3); //ok
+    double linear_vel = (rear_left_wheel_speed+rear_right_wheel_speed)/2.0;
+    double steering_angle = front_steer_angle;
+    // double angular_vel =  linear_vel * tan(steering_angle) / 0.4;
 
-double correction_factor = 0.80;  // You may need to adjust this factor based on experimentation
-double cx = linear_vel * sin(odom_out.pose.pose.orientation.z) * sin(steering_angle) * correction_factor * dt;
-double cy = linear_vel * cos(odom_out.pose.pose.orientation.z) * sin(steering_angle) * 0.5 * dt;
-// double cy = 0;
+    double correction_factor = 0.80;  // You may need to adjust this factor based on experimentation
+    double cx = linear_vel * sin(odom_out.pose.pose.orientation.z) * sin(steering_angle) * correction_factor * dt;
+    double cy = linear_vel * cos(odom_out.pose.pose.orientation.z) * sin(steering_angle) * 0.5 * dt;
+    // double cy = 0;
 
-// Use an Ackermann steering model to calculate the incremental position
-// double delta_x = (linear_vel * cos(odom_out.pose.pose.orientation.z) +  linear_vel * cos(odom_out.pose.pose.orientation.z + steering_angle)*1) * dt;
-// double delta_y = (linear_vel * sin(odom_out.pose.pose.orientation.z) +  linear_vel * cos(odom_out.pose.pose.orientation.z + steering_angle)*1) * dt;
-double delta_x = linear_vel * cos(odom_out.pose.pose.orientation.z)  * dt;
-double delta_y = linear_vel * sin(odom_out.pose.pose.orientation.z)  * dt;
-// ROS_INFO("delta_x: %f, delta_y: %f", delta_x, delta_y);
+    // Use an Ackermann steering model to calculate the incremental position
+    // double delta_x = (linear_vel * cos(odom_out.pose.pose.orientation.z) +  linear_vel * cos(odom_out.pose.pose.orientation.z + steering_angle)*1) * dt;
+    // double delta_y = (linear_vel * sin(odom_out.pose.pose.orientation.z) +  linear_vel * cos(odom_out.pose.pose.orientation.z + steering_angle)*1) * dt;
+    double delta_x = linear_vel * cos(odom_out.pose.pose.orientation.z)  * dt;
+    double delta_y = linear_vel * sin(odom_out.pose.pose.orientation.z)  * dt;
+    // ROS_INFO("delta_x: %f, delta_y: %f", delta_x, delta_y);
 
-delta_x -= cx;
-delta_y += cy;
-
-
-
-ROS_INFO("cx: %f, cy: %f", cx, cy);
+    delta_x -= cx;
+    delta_y += cy;
 
 
 
-// Update the position in the odometry message
-odom_out.pose.pose.position.x += delta_x;
-odom_out.pose.pose.position.y += delta_y;
-odom_out.pose.pose.orientation.z = yaw_from_imu;
+    ROS_INFO("cx: %f, cy: %f", cx, cy);
 
-odom.pose.pose.position.x = odom_out.pose.pose.position.x ;
-odom.pose.pose.position.y = odom_out.pose.pose.position.y;
-odom.pose.pose.orientation.z = sin(odom_out.pose.pose.orientation.z/2.0);
-odom.pose.pose.orientation.w = cos(odom_out.pose.pose.orientation.z/2.0);
 
-// Update the transformation message
-tf_msg.transforms[0].header.stamp = ros::Time::now();
-tf_msg.transforms[0].header.frame_id = "odom";
-tf_msg.transforms[0].child_frame_id = "base_footprint";
-tf_msg.transforms[0].transform.translation.x = odom_out.pose.pose.position.x;
-tf_msg.transforms[0].transform.translation.y = odom_out.pose.pose.position.y;
-// tf_msg.transforms[0].transform.rotation = odom_out.pose.pose.orientation;
-tf_msg.transforms[0].transform.rotation.z = sin(odom_out.pose.pose.orientation.z/2.0);
-tf_msg.transforms[0].transform.rotation.w = cos(odom_out.pose.pose.orientation.z/2.0);
+
+    // Update the position in the odometry message
+    odom_out.pose.pose.position.x += delta_x;
+    odom_out.pose.pose.position.y += delta_y;
+    odom_out.pose.pose.orientation.z = yaw_from_imu;
+
+    odom.pose.pose.position.x = odom_out.pose.pose.position.x ;
+    odom.pose.pose.position.y = odom_out.pose.pose.position.y;
+    odom.pose.pose.orientation.z = sin(odom_out.pose.pose.orientation.z/2.0);
+    odom.pose.pose.orientation.w = cos(odom_out.pose.pose.orientation.z/2.0);
+
+    // Update the transformation message
+    tf_msg.transforms[0].header.stamp = ros::Time::now();
+    tf_msg.transforms[0].header.frame_id = "odom";
+    tf_msg.transforms[0].child_frame_id = "base_footprint";
+    tf_msg.transforms[0].transform.translation.x = odom_out.pose.pose.position.x;
+    tf_msg.transforms[0].transform.translation.y = odom_out.pose.pose.position.y;
+    // tf_msg.transforms[0].transform.rotation = odom_out.pose.pose.orientation;
+    tf_msg.transforms[0].transform.rotation.z = sin(odom_out.pose.pose.orientation.z/2.0);
+    tf_msg.transforms[0].transform.rotation.w = cos(odom_out.pose.pose.orientation.z/2.0);
 
 
     pub_tf.publish(tf_msg);
