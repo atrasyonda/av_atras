@@ -2,8 +2,8 @@
 
     <!--  ************** Global Parameters ***************  -->
     <param name="use_sim_time" value="true"/>
-    <arg name="controller"  default="mpc" doc="opt: dwa, mpc"/> 
     <arg name="model"  default="ackermann"/>  
+    <arg name="local_planner"  default="teb" doc="mpc, teb, basic"/> 
     <arg name="tf_prefix"  default=""/> 
 
     <!--  ************** GAZEBO Simulator ***************  -->
@@ -70,21 +70,31 @@
     <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
         <rosparam file="$(find av_atras)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
         <rosparam file="$(find av_atras)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
-        <rosparam file="$(find av_atras)/config/local_costmap_params.yaml" command="load" />
-        <rosparam file="$(find av_atras)/config/global_costmap_params.yaml" command="load" />    
         
         <!-- Global Planner -->
         <param name="base_global_planner" value="global_planner/GlobalPlanner" />
         <param name="planner_frequency" value="1.0" />
-        <param name="planner_frequency" value="0.0" if="$(eval controller == 'pure_pursuit')"/>
         <param name="planner_patience" value="5.0" />
+        <rosparam file="$(find av_atras)/config/global_costmap_params.yaml" command="load" />    
         <rosparam file="$(find av_atras)/config/global_planner_params.yaml" command="load" />
         
         <!-- Local Planner -->
-        <rosparam file="$(find av_atras)/config/mpc_params.yaml" command="load" />
-        <param name="base_local_planner" value="mpc_ros/MPCPlannerROS"  if="$(eval controller == 'mpc')"/>
-        <!-- <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS"  if="$(eval controller == 'dwa')"/>     -->
+        <param name="base_local_planner" value="mpc_ros/MPCPlannerROS" if="$(eval local_planner == 'mpc')" />
+        <rosparam file="$(find av_atras)/config/local_costmap_params.yaml" command="load" if="$(eval local_planner == 'mpc')" />
+        <!-- <rosparam file="$(find av_atras)/config/mpc_params.yaml" command="load" /> -->
+        <rosparam file="$(find av_atras)/config/mpc_last_params_ackermann.yaml" command="load" if="$(eval local_planner == 'mpc')" />
+
+        <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" if="$(eval local_planner == 'teb')"/>
+        <rosparam file="$(find av_atras)/config/teb_local_costmap_params.yaml" command="load" if="$(eval local_planner == 'teb')"/>
+        <rosparam file="$(find av_atras)/config/teb_local_planner_params.yaml" command="load" if="$(eval local_planner == 'teb')" />
+        <param name="controller_frequency" value="10.0" if="$(eval local_planner == 'teb')"/>
+        <!-- <param name="controller_patience" value="15.0" if="$(eval local_planner == 'teb')"/> -->
+        <param name="clearing_rotation_allowed" value="false" if="$(eval local_planner == 'teb')"/>
         
+        <rosparam file="$(find av_atras)/config/basic_local_planner_params.yaml" command="load" if="$(eval local_planner == 'basic')" />
+        <!-- <remap from="/cmd_vel" to="/move_base/cmd_vel"/> -->
+        
+
     </node>
     
     <!--  ************** Visualisation **************  -->
