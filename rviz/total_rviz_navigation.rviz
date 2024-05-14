@@ -11,6 +11,7 @@ Panels:
         - /Local Planner1
         - /Local Planner1/MPC_Reference1
         - /Path2
+        - /Map2
       Splitter Ratio: 0.43225806951522827
     Tree Height: 715
   - Class: rviz/Selection
@@ -601,6 +602,16 @@ Visualization Manager:
       Topic: /move_base/TebLocalPlannerROS/local_plan
       Unreliable: false
       Value: true
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /move_base/local_costmap/costmap
+      Unreliable: false
+      Use Timestamp: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 0; 0; 0
@@ -629,7 +640,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 22.66962242126465
+      Distance: 11.289129257202148
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -637,17 +648,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -2.2239205837249756
-        Y: -1.8978562355041504
-        Z: -4.691648960113525
+        X: -0.9155166745185852
+        Y: -0.822838544845581
+        Z: -4.916075706481934
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.3847965002059937
+      Pitch: 1.4047964811325073
       Target Frame: <Fixed Frame>
-      Yaw: 1.5404181480407715
+      Yaw: 1.6604180335998535
     Saved: ~
 Window Geometry:
   Displays:
@@ -665,5 +676,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1048
-  X: 92
-  Y: 27
+  X: 2211
+  Y: 293

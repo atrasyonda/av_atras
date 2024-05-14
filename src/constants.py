@@ -42,15 +42,19 @@ g = 9.8     # konstanta gravitasi (m/s^2)
 # schedulling vector variable
 psi_dot_min= -1.42  # batas bawah kecepatan anguler (rad/s)
 psi_dot_max= 1.42   # batas atas kecepatan anguler (rad/s)
+# xr_dot_min= -0.2
 xr_dot_min= 0.1     # batas bawah reference kecepatan linier (m/s)
-xr_dot_max= 20      # batas atas reference kecepatan linier (m/s)
+# xr_dot_max= 0.5
+xr_dot_max= 20       # batas atas reference kecepatan linier (m/s)
 psi_min= -0.05      # batas bawah sudut orientasi (rad)
 psi_max= 0.05       # batas atas sudut orientasi (rad)
 
-delta_min = -0.8  # -85 deg batas bawah sudut steering (rad) --> referensi -0.25 (-15 deg)
-delta_max = 0.8   # 1.5  85 deg batas atas sudut steering (rad) --> referensi 0.25 (15 deg)
-x_dot_min = 0.1     # batas bawah kecepatan longitudinal / linier (m/s) --> referensi 0.1
-x_dot_max = 10      # batas atas kecepatan longitudinal / linier (m/s) --> referensi 20
+delta_min = -0.25  # -85 deg batas bawah sudut steering (rad) --> referensi -0.25 (-15 deg)
+delta_max = 0.25   # 1.5  85 deg batas atas sudut steering (rad) --> referensi 0.25 (15 deg)
+# x_dot_min = -0.2
+x_dot_min = 0.1      # batas bawah kecepatan longitudinal / linier (m/s) --> referensi 0.1
+# x_dot_max = 0.5
+x_dot_max = 20       # batas atas kecepatan longitudinal / linier (m/s) --> referensi 20
 y_dot_min = -1      # batas bawah kecepatan lateral (m/s)
 y_dot_max = 1       # batas atas kecepatan lateral (m/s)
 

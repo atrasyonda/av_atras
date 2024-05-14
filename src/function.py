@@ -190,11 +190,9 @@ class Kinematic:
 
         return P, outputKi, S
 
-    def calculate_new_states(Ac_pk, pk, X_k, Bc, U_k, Rc_k, i):
-        Ac = Kinematic.getLPV(pk[0], pk[1][i], pk[2], Ac_pk) # Ac is a function of schedulling vector psi_dot, xr_dot[i], psi_e 
-        
-        # X_k+i+1 = Ac(pk) @ X_k + Bc @ U_k - Bc @ Rc_k[i]
-        next_state = Ac@X_k + Bc@U_k - Bc@Rc_k[:,:,i]
+    def calculate_new_states(Ac_pk, pk, X_k, Bc, U_k, Rc_k):
+        Ac = Kinematic.getLPV(pk[0], pk[1], pk[2], Ac_pk) # Ac is a function of schedulling vector psi_dot, xr_dot[i], psi_e 
+        next_state = Ac@X_k + Bc@U_k - Bc@Rc_k
         return next_state
 
     def LPV_MPC(x_k, u_k, r_k, pk, Ac_pk, Bc, P, S):
@@ -209,7 +207,7 @@ class Kinematic:
                 constraints = [X_k[i]==x_k]      # Set initial state
                 U_k[i-1].value = u_k
             constraints += [U_k[i] == U_k[i-1]+delta_u_k[i]]
-            constraints += [X_k[i+1] == Kinematic.calculate_new_states(Ac_pk, pk, X_k[i], Bc, U_k[i], r_k, i)]
+            constraints += [X_k[i+1] == Kinematic.calculate_new_states(Ac_pk, pk[:,i], X_k[i], Bc, U_k[i], r_k[:,:,i])]
             constraints += [delta_u_min <= delta_u_k[i], delta_u_k[i] <= delta_u_max]
             constraints += [u_min <= U_k[i], U_k[i] <= u_max]
         Jk += cp.quad_form(X_k[N], P)
@@ -230,11 +228,11 @@ class Kinematic:
                     Delta_U_optimized[j]=delta_u_k[j].value
                     U_k_optimized[j]=U_k[j].value
 
-            # u_opt = U_k_optimized[0]
-            # x_opt = Xk_optimized[1]
+            u_opt = U_k_optimized[0]
+            x_opt = Xk_optimized[1]
 
-            u_opt = U_k_optimized
-            x_opt = Xk_optimized
+            # u_opt = U_k_optimized
+            # x_opt = Xk_optimized
 
             # print("next_x_opt : ", x_opt[1])
 
@@ -243,8 +241,10 @@ class Kinematic:
             print("Status:", problem.status)
             # Agar program tidak eror dan loop terus berjalan, 
             # maka nilai u yang di return adalah nilai sebelumnya
-            x_opt = 0
-            u_opt = u_k + delta_u_max/2
+            x_opt = np.zeros([N+1,3,1])
+            # u_opt = u_k + delta_u_max/2
+            u_opt = np.zeros([N,2,1])
+            
         
         # print("Xk_optimized", Xk_optimized)
         # print("Delta_U_optimized", Delta_U_optimized)
