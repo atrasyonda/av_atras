@@ -28,7 +28,8 @@ def callback(data,psi_vector):
 
     print("current_state = ", X_k)
     print("current_control_signal = ", U_k)
-
+     
+    
     # Construct reference signal for N horizon prediction
     # xr_dot_psi_e = [x * np.cos(data.psi) for x in data.x_dot_ref]
     xr_dot_psi_e = [data.x_dot_ref[i]*np.cos(psi_vector[i]) for i in range(len(psi_vector))]
