@@ -12,9 +12,15 @@ from function import Kinematic
 Ac_pk, Bc = Kinematic.getModel()  # get model parameters
 P, Ki, S= Kinematic.getMPCSet(Ac_pk,Bc) 
 
-def callback(data):
+def callback(data,psi_vector):
     # Construct Vector of Schedulling Variables
-    pk = [data.psi_dot, data.x_dot_ref, data.psi]
+    # pk = [data.psi_dot, data.x_dot_ref, data.psi]
+    pk_vector = np.zeros([3,N])
+    pk_vector[0] = data.psi_dot_ref
+    pk_vector[1] = data.x_dot_ref
+    pk_vector[2] = psi_vector
+
+    pk = pk_vector
 
     # Construct the State-Space model
     X_k = np.array([[data.x], [data.y], [data.psi]])  # get current error state 
@@ -24,7 +30,9 @@ def callback(data):
     print("current_control_signal = ", U_k)
 
     # Construct reference signal for N horizon prediction
-    xr_dot_psi_e = [x * np.cos(data.psi) for x in data.x_dot_ref]
+    # xr_dot_psi_e = [x * np.cos(data.psi) for x in data.x_dot_ref]
+    xr_dot_psi_e = [data.x_dot_ref[i]*np.cos(psi_vector[i]) for i in range(len(psi_vector))]
+
     Rc_k = np.array([[xr_dot_psi_e], [data.psi_dot_ref]])
 
     

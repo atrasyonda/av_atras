@@ -22,12 +22,19 @@ TebLocalPlannerROS:
 
   # Robot
 
-  max_vel_x: 0.4
+  # max_vel_x: 0.4
+  # max_vel_x_backwards: 0.2
+  # max_vel_y: 0.0
+  # max_vel_theta: 0.3 # the angular velocity is also bounded by min_turning_radius in case of a carlike robot (r = v / omega)
+  # acc_lim_x: 0.5
+  # acc_lim_theta: 0.5
+
+  max_vel_x: 10
   max_vel_x_backwards: 0.2
-  max_vel_y: 0.0
-  max_vel_theta: 0.3 # the angular velocity is also bounded by min_turning_radius in case of a carlike robot (r = v / omega)
-  acc_lim_x: 0.5
-  acc_lim_theta: 0.5
+  max_vel_y: 1
+  max_vel_theta: 1.42 # the angular velocity is also bounded by min_turning_radius in case of a carlike robot (r = v / omega)
+  acc_lim_x: 1
+  acc_lim_theta: 0.3
 
   # ********************** Carlike robot parameters ********************
   min_turning_radius: 0.2 # Min turning radius of the carlike robot (compute value using a model or adjust with rqt_reconfigure manually)
@@ -113,7 +120,7 @@ TebLocalPlannerROS:
   delete_detours_backwards: True
   max_ratio_detours_duration_best_duration: 3.0
   visualize_hc_graph: False
-  visualize_with_time_as_z_axis_scale: False
+  visualize_with_time_as_z_axis_scale: 0.0
 
   # Recovery
 
