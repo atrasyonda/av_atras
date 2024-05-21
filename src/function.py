@@ -63,6 +63,8 @@ class Kinematic:
             [0,0],
             [0,-Tc]
         ]) # matrix 3x2
+
+        print("Ac_pk : ", Ac_pk)
         return Ac_pk, Bc
 
 
@@ -93,7 +95,7 @@ class Kinematic:
     def getMPCSet(Ac_pk,Bc):
         invQts= np.linalg.inv(Q_k)
         invRts= np.linalg.inv(R_k)
-        Y = cp.Variable((n, n),symmetric=True)
+        Y = cp.Variable((n, n),PSD=True)
         W = [cp.Variable((m, n)) for _ in range(2**n)]
         
         constraints = [Y>>0]
@@ -125,14 +127,15 @@ class Kinematic:
         
         #================================================================================================
         
-        Z = cp.Variable((n, n), symmetric=True)
+        Z = cp.Variable((n, n), PSD=True)
         # u_bar= np.array([[1.4], [20]]) # matrix 2x1
         u_bar = u_max
         u_bar_squared= u_bar@u_bar.T
         S= np.zeros([3,3])
-
+        Jk2=0
         constraints2=[]
         for i in range (2**n):
+            Jk2 += cp.quad_form(np.ones([n,1]), Z) 
             Ai = Ac_pk[i]
             Ki = outputKi[i]
             lmi_prob = cp.vstack([
@@ -140,8 +143,8 @@ class Kinematic:
                 cp.hstack([(Ai+Bc@Ki)@Z, -Z]), #baris 2
                 ])
             constraints2 += [lmi_prob<<0]
-            constraints2 += [Ki@Z@Ki.T-u_bar_squared<<0]
-        obj2 = cp.Maximize(1)
+            # constraints2 += [Ki@Z@Ki.T-u_bar_squared<<0]
+        obj2 = cp.Maximize(Jk2)
         problem2 = cp.Problem(obj2, constraints2)
         problem2.solve(solver=cp.SCS, verbose=False,max_iters=1000)
         if problem2.status == cp.OPTIMAL:
@@ -159,6 +162,7 @@ class Kinematic:
         # P = 10000*np.array([[0.8025, -0.1495, -0.5527],
         #       [-0.1495, 0.3212, 0.8725],
         #       [-0.5527, 0.8725, 3.2362]])
+
         P = np.array([[10000, 0, 0],
                 [0, 3333.33333333, 10000],
                 [0, 10000, 40000]])
@@ -195,7 +199,7 @@ class Kinematic:
         next_state = Ac@X_k + Bc@U_k - Bc@Rc_k
         return next_state
 
-    def LPV_MPC(x_k, u_k, r_k, pk, Ac_pk, Bc, P, S):
+    def LPV_MPC(x_k, u_k, r_k, pk, Ac_pk, Bc, P, S,N):
         X_k = [cp.Variable((n, 1)) for _ in range(N+1)]
         delta_u_k = [cp.Variable((m, 1)) for _ in range(N)]     # Control input at time k
         U_k = [cp.Variable((m, 1)) for _ in range(N)]     # Control input at time k        
@@ -205,7 +209,7 @@ class Kinematic:
             Jk += cp.quad_form(X_k[i], Q_k) + cp.quad_form(delta_u_k[i], R_k)
             if i == 0 :
                 constraints = [X_k[i]==x_k]      # Set initial state
-                U_k[i-1].value = u_k
+                U_k[i-1].value = np.zeros([2,1])
             constraints += [U_k[i] == U_k[i-1]+delta_u_k[i]]
             constraints += [X_k[i+1] == Kinematic.calculate_new_states(Ac_pk, pk[:,i], X_k[i], Bc, U_k[i], r_k[:,:,i])]
             constraints += [delta_u_min <= delta_u_k[i], delta_u_k[i] <= delta_u_max]
@@ -228,11 +232,11 @@ class Kinematic:
                     Delta_U_optimized[j]=delta_u_k[j].value
                     U_k_optimized[j]=U_k[j].value
 
-            u_opt = U_k_optimized[0]
-            x_opt = Xk_optimized[1]
+            # u_opt = U_k_optimized[0]
+            # x_opt = Xk_optimized[1]
 
-            # u_opt = U_k_optimized
-            # x_opt = Xk_optimized
+            u_opt = U_k_optimized
+            x_opt = Xk_optimized
 
             # print("next_x_opt : ", x_opt[1])
 

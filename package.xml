@@ -67,6 +67,7 @@
   <export>
     <nav_core plugin="${prefix}/global_planner_plugin.xml" />
     <nav_core plugin="${prefix}/mpc_plugin.xml"/>
+    <gazebo_ros_control plugin="${prefix}/steer_bot_hardware_gazebo_plugin.xml"/>
   </export>
   
 </package>

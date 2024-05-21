@@ -1,8 +1,8 @@
 # This is the message that will send to controller, obtained from many topics
 #=== FROM ODOMETRY ESTIMATION ===#
-float64 x		# error position x --> x_ref - x_est
-float64 y		# error position y --> y_ref - y_est
-float64 psi		# error orientation z --> psi_ref - psi_est
+float64[] x		# error position x --> x_ref - x_est
+float64[] y		# error position y --> y_ref - y_est
+float64[] psi		# error orientation z --> psi_ref - psi_est
 
 float64 x_dot		# velocity x 
 float64 y_dot		# velocity y

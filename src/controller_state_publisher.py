@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import rospy
 import random
-from autonomous_vehicle.msg import state
+from av_atras.msg import state
 import matplotlib.pyplot as plt
 from constants import *
 from function import Kinematic
@@ -105,36 +105,48 @@ class State_Publisher:
         position_error = None
         velocity_state = None
         velocity_reference = None
-        if self.latest_path_pose is not None and self.latest_odom is not None:
-            X_error = self.path_x[0] - self.odom_x
-            Y_error = self.path_y[0] - self.odom_y
-            Psi_error = self.path_psi[0] - self.odom_psi
+        if self.latest_path_pose is not None and self.latest_odom is not None and self.latest_path_twist is not None:
+            position_error = np.zeros([3,len(self.path_x)])
+            velocity_state = []
+            velocity_reference = np.zeros([2,len(self.path_psi)])
+
+            X_error = [self.path_x[i]- self.odom_x for i in range(len(self.path_x))] 
+            Y_error = [self.path_y[i] - self.odom_y for i in range(len(self.path_y))] 
+            Psi_error = [self.path_psi[i] - self.odom_psi for i in range(len(self.path_psi))]
             Vx = self.odom_x_dot
             Vy = self.odom_y_dot
             Psi_dot = self.odom_psi_dot
-            position_error = [X_error,Y_error,Psi_error]
-            velocity_state = [Vx, Vy, Psi_dot]
-        else:
-            rospy.logwarn("Path Message is Missing, check /move_base local plan")
-            rospy.logwarn("Odom Message is Missing, check /odom")
-            # return None
+            # position_error = [X_error,Y_error,Psi_error]
 
-        if self.latest_path_twist is not None:
-            X_dot_ref = [self.path_x_dot for _ in range(20)]
-            Psi_dot_ref = [self.path_psi_dot for _ in range(20)]
-            velocity_reference = np.zeros([2,20])
-            velocity_reference[0, :] = X_dot_ref
-            velocity_reference[1, :] = Psi_dot_ref 
+            position_error[0] = X_error
+            position_error[1] = Y_error
+            position_error[2] = Psi_error
+            velocity_state = [Vx, Vy, Psi_dot]
+
+            Vx_ref = [np.sqrt((self.path_x[i+1]-self.path_x[i])**2 + (self.path_y[i+1]-self.path_y[i])**2)/0.1 for i in range(len(self.path_x)-1)]
+            Omega_ref = [(self.path_psi[i+1]-self.path_psi[i])/0.1 for i in range(len(self.path_psi)-1)]
+
+            X_dot_ref = [self.path_x_dot*np.cos(Psi_error[i]) for i in range(len(self.path_psi))]
+            Psi_dot_ref = [self.path_psi_dot for _ in range(len(X_error))]
+            velocity_reference[0,0] = self.path_x_dot
+            velocity_reference[0,1:] = Vx_ref
+            velocity_reference[1,0] = self.path_psi_dot
+            velocity_reference[1,1:] = Omega_ref 
+
+            print("============================")
+            print("Vx_reference", velocity_reference[0])
+            print("Omega_reference", velocity_reference[1])
+            print("X_error", position_error[0])
+            print("Y_error", position_error[1])
+            print("Psi_error", position_error[2])
+            print("============================")
+        else:
+            rospy.logwarn("Either Path/Odom/Cmd_vel Message is Missing, check /move_base local plan,/odom and /move_base/cmd_vel")
             """
             NOTE : Velocity ref dari cmd_vel cuma 1 step, yang saya ulang 20 kali sbg referensi
             sepanjang horizon. Sepertinya ada yg salah karena seharusnya 20 step kedepan nilainya
             beda-beda. kalau dari simulasi kemarin xdot= (x2-x1)/T begitu juga psidot= (psi2-psi1)/T
             """
-
-        else:
-            rospy.logwarn("Velocity reference Message is Missing, check /move_base/cmd_vel ")
-            # return None
-        
         return position_error, velocity_state, velocity_reference
 
     def run(self):
@@ -143,22 +155,21 @@ class State_Publisher:
         car_msg = state()
         while not rospy.is_shutdown():
             position_error, velocity_state, velocity_reference = self.collect_car_state()
-            # velocity_error = self.calculate_velocity_error()
 
             if position_error is not None:
-                rospy.loginfo("Position Error: %s", position_error)
+                # rospy.loginfo("Position Error: %s", position_error)
                 car_msg.x = position_error[0]
                 car_msg.y = position_error[1]
                 car_msg.psi = position_error[2]
 
             if velocity_state is not None:
-                rospy.loginfo("Velocity State: %s", velocity_state)
+                # rospy.loginfo("Velocity State: %s", velocity_state)
                 car_msg.x_dot = velocity_state[0]
                 car_msg.y_dot = velocity_state[1]
                 car_msg.psi_dot = velocity_state[2]
 
             if velocity_reference is not None:
-                rospy.loginfo("Velocity Reference: %s", velocity_reference)
+                # rospy.loginfo("Velocity Reference: %s", velocity_reference)
                 car_msg.x_dot_ref = velocity_reference[0]
                 car_msg.psi_dot_ref = velocity_reference[1]
 

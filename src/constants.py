@@ -3,7 +3,7 @@ import numpy as np
 
 n = 3  # number of states
 m = 2  # number of inputs
-N = 20 # horizon period
+# N = 20 # horizon period
 
 Tc=0.1      # time sampling for kinematic control 
 Td=0.01     # time sampling for dynamic control 
@@ -40,27 +40,39 @@ Af = 1.91     # front sectional area of the vehicle (m^2)
 g = 9.8     # konstanta gravitasi (m/s^2)
 
 # schedulling vector variable
-psi_dot_min= -1.42  # batas bawah kecepatan anguler (rad/s)
-psi_dot_max= 1.42   # batas atas kecepatan anguler (rad/s)
-# xr_dot_min= -0.2
+# psi_dot_min= -1.42  # batas bawah kecepatan anguler (rad/s)
+# psi_dot_max= 1.42   # batas atas kecepatan anguler (rad/s)
+# xr_dot_min= 0.1     # batas bawah reference kecepatan linier (m/s)
+# xr_dot_max= 20       # batas atas reference kecepatan linier (m/s)
+# psi_min= -0.05      # batas bawah sudut orientasi (rad)
+# psi_max= 0.05       # batas atas sudut orientasi (rad)
+
+# delta_min = -0.25  # -85 deg batas bawah sudut steering (rad) --> referensi -0.25 (-15 deg)
+# delta_max = 0.25   # 1.5  85 deg batas atas sudut steering (rad) --> referensi 0.25 (15 deg)
+# x_dot_min = 0.1      # batas bawah kecepatan longitudinal / linier (m/s) --> referensi 0.1
+# x_dot_max = 20       # batas atas kecepatan longitudinal / linier (m/s) --> referensi 20
+# y_dot_min = -1      # batas bawah kecepatan lateral (m/s)
+# y_dot_max = 1       # batas atas kecepatan lateral (m/s)
+
+# a_min = -2         # batas bawah percepatan (m/s^2)
+# a_max = 2          # batas atas percepatan (m/s^2)
+
+psi_dot_min= -1  # batas bawah kecepatan anguler (rad/s)
+psi_dot_max= 1   # batas atas kecepatan anguler (rad/s)
 xr_dot_min= 0.1     # batas bawah reference kecepatan linier (m/s)
-# xr_dot_max= 0.5
-xr_dot_max= 20       # batas atas reference kecepatan linier (m/s)
+xr_dot_max= 3       # batas atas reference kecepatan linier (m/s)
 psi_min= -0.05      # batas bawah sudut orientasi (rad)
 psi_max= 0.05       # batas atas sudut orientasi (rad)
 
-delta_min = -0.25  # -85 deg batas bawah sudut steering (rad) --> referensi -0.25 (-15 deg)
-delta_max = 0.25   # 1.5  85 deg batas atas sudut steering (rad) --> referensi 0.25 (15 deg)
-# x_dot_min = -0.2
+delta_min = -0.5  # -85 deg batas bawah sudut steering (rad) --> referensi -0.25 (-15 deg)
+delta_max = 0.5   # 1.5  85 deg batas atas sudut steering (rad) --> referensi 0.25 (15 deg)
 x_dot_min = 0.1      # batas bawah kecepatan longitudinal / linier (m/s) --> referensi 0.1
-# x_dot_max = 0.5
-x_dot_max = 20       # batas atas kecepatan longitudinal / linier (m/s) --> referensi 20
+x_dot_max = 3       # batas atas kecepatan longitudinal / linier (m/s) --> referensi 20
 y_dot_min = -1      # batas bawah kecepatan lateral (m/s)
 y_dot_max = 1       # batas atas kecepatan lateral (m/s)
 
-a_min = -2         # batas bawah percepatan (m/s^2)
-a_max = 2          # batas atas percepatan (m/s^2)
-
+a_min = -0.5         # batas bawah percepatan (m/s^2)
+a_max = 0.5          # batas atas percepatan (m/s^2)
 
 # Kinematic LPV-MPC Controller Design
 u_max = np.array([[x_dot_max], [psi_dot_max]])  # batas atas input (X_dot dan Psi_dot) --> jurnal 

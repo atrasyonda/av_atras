@@ -75,23 +75,21 @@
         <rosparam file="$(find av_atras)/config/global_planner_params.yaml" command="load" />
         
         <!-- Local Planner -->
-        <param name="base_local_planner" value="mpc_ros/MPCPlannerROS" if="$(eval local_planner == 'mpc')" />
+        <param name="base_local_planner" value="av_atras/MPCPlannerROS" if="$(eval local_planner == 'mpc')" />
         <rosparam file="$(find av_atras)/config/local_costmap_params.yaml" command="load" if="$(eval local_planner == 'mpc')" />
-        <!-- <rosparam file="$(find av_atras)/config/mpc_params.yaml" command="load" /> -->
-        <rosparam file="$(find av_atras)/config/mpc_last_params_ackermann.yaml" command="load" if="$(eval local_planner == 'mpc')" />
+        <rosparam file="$(find av_atras)/config/mpc_params.yaml" command="load" if="$(eval local_planner == 'mpc')" />
+        <!-- <rosparam file="$(find av_atras)/config/mpc_last_params_ackermann.yaml" command="load" if="$(eval local_planner == 'mpc')" /> -->
 
         <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" if="$(eval local_planner == 'teb')"/>
         <rosparam file="$(find av_atras)/config/teb_local_costmap_params.yaml" command="load" if="$(eval local_planner == 'teb')"/>
         <rosparam file="$(find av_atras)/config/teb_local_planner_params.yaml" command="load" if="$(eval local_planner == 'teb')" />
         <param name="controller_frequency" value="10.0" if="$(eval local_planner == 'teb')"/>
-        <!-- <param name="controller_patience" value="15.0" if="$(eval local_planner == 'teb')"/> -->
         <param name="clearing_rotation_allowed" value="false" if="$(eval local_planner == 'teb')"/>
         
         <rosparam file="$(find av_atras)/config/basic_local_planner_params.yaml" command="load" if="$(eval local_planner == 'basic')" />
         
         <!-- Controller Node -->
-        <!-- <remap from="/cmd_vel" to="/move_base/cmd_vel"/> -->
-
+        <remap from="/cmd_vel" to="/move_base/cmd_vel"/>
 
         <!-- Launch a rqt steering GUI for publishing to ackermann_steering_controllesr/cmd_vel (KONTROL SCR MANUAL) -->
         <!-- <node pkg="rqt_robot_steering" type="rqt_robot_steering" name="rqt_robot_steering" >

@@ -122,7 +122,7 @@ generate_dynamic_reconfigure_options(config/MPCPlanner.cfg)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
    INCLUDE_DIRS include
-   LIBRARIES mpc_ros
+   LIBRARIES av_atras
    CATKIN_DEPENDS costmap_2d dynamic_reconfigure geometry_msgs move_base roscpp rospy std_msgs tf visualization_msgs pluginlib
 #  DEPENDS system_lib
 )
