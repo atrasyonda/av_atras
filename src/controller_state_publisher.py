@@ -58,10 +58,10 @@ class State_Publisher:
         (roll, pitch, yaw) = euler_from_quaternion(orientation_list)
         self.odom_psi = yaw # in radians
 
-        print("=============================")
-        print("z_odom", self.latest_odom.pose.pose.orientation.z)
-        print("yaw_quaternion", yaw)
-        print("=============================")
+        # print("=============================")
+        # print("z_odom", self.latest_odom.pose.pose.orientation.z)
+        # print("yaw_quaternion", yaw)
+        # print("=============================")
 
         self.odom_x_dot = self.latest_odom.twist.twist.linear.x
         self.odom_y_dot = self.latest_odom.twist.twist.linear.y
@@ -116,24 +116,22 @@ class State_Publisher:
                 orientation_q = transformed_pose.pose.orientation
                 orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
                 (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(orientation_list)
-                # self.path_psi.append(yaw)
+                self.path_psi.append(yaw)
 
-                self.path_psi.append(transformed_pose.pose.orientation.z)
-                path_yaw.append(yaw)
+                # self.path_psi.append(transformed_pose.pose.orientation.z)
+                # path_yaw.append(yaw)
 
 
                 linear_velocity = data.velocity.linear
                 transformed_linear_velocity = rotation_matrix.dot([linear_velocity.x, linear_velocity.y, linear_velocity.z, 0.0])[:3]
-                self.path_x_dot.append(transformed_linear_velocity[0])
+                # self.path_x_dot.append(transformed_linear_velocity[0])
+                self.path_x_dot.append(data.velocity.linear.x)
                 
                 # Transform angular velocity
                 angular_velocity = data.velocity.angular
                 transformed_angular_velocity = rotation_matrix.dot([angular_velocity.x, angular_velocity.y, angular_velocity.z, 0.0])[:3]
-                self.path_psi_dot.append(transformed_angular_velocity[2])
-
-                # transformed_twist = self.tf_listener.transformPose('/odom', twist_stamped)
-                # self.path_x_dot.append(transformed_twist.twist.linear.x)
-                # self.path_psi_dot.append(transformed_twist.twist.angular.z)
+                # self.path_psi_dot.append(transformed_angular_velocity[2])
+                self.path_psi_dot.append(data.velocity.angular.z)
 
 
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as e:
@@ -160,10 +158,10 @@ class State_Publisher:
 
 
 
-        print("=============================")
-        print("z_path", self.path_psi)
-        print("=============================")
-        print("yaw_quaternion", path_yaw)
+        # print("=============================")
+        # print("z_path", self.path_psi)
+        # print("=============================")
+        # print("yaw_quaternion", path_yaw)
 
         # print("=============================")
         # print("Path_x : ", self.path_x)
@@ -246,19 +244,19 @@ class State_Publisher:
             position_error, velocity_state, velocity_reference = self.collect_car_state()
 
             if position_error is not None:
-                # rospy.loginfo("Position Error: %s", position_error)
+                rospy.loginfo("Position Error: %s", position_error)
                 car_msg.x = position_error[0]
                 car_msg.y = position_error[1]
                 car_msg.psi = position_error[2]
 
             if velocity_state is not None:
-                # rospy.loginfo("Velocity State: %s", velocity_state)
+                rospy.loginfo("Velocity State: %s", velocity_state)
                 car_msg.x_dot = velocity_state[0]
                 car_msg.y_dot = velocity_state[1]
                 car_msg.psi_dot = velocity_state[2]
 
             if velocity_reference is not None:
-                # rospy.loginfo("Velocity Reference: %s", velocity_reference)
+                rospy.loginfo("Velocity Reference: %s", velocity_reference)
                 car_msg.x_dot_ref = velocity_reference[0]
                 car_msg.psi_dot_ref = velocity_reference[1]
 
