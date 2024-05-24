@@ -147,7 +147,7 @@ MPCNode::MPCNode()
 
     //Publishers and Subscribers
     _sub_odom   = _nh.subscribe("/odom", 1, &MPCNode::odomCB, this);
-    _sub_path   = _nh.subscribe( _globalPath_topic, 1, &MPCNode::pathCB, this);
+    _sub_path   = _nh.subscribe( _globalPath_topic, 1, &MPCNode::pathCB, this); // /move_base/TrajectoryPlannerROS/global_plan
     _sub_gen_path   = _nh.subscribe( "desired_path", 1, &MPCNode::desiredPathCB, this);
     _sub_goal   = _nh.subscribe( _goal_topic, 1, &MPCNode::goalCB, this);
     _sub_amcl   = _nh.subscribe("/amcl_pose", 5, &MPCNode::amclCB, this);
@@ -429,7 +429,8 @@ void MPCNode::desiredPathCB(const nav_msgs::Path::ConstPtr& totalPathMsg)
 // CallBack: Update path waypoints (conversion to odom frame)
 void MPCNode::pathCB(const nav_msgs::Path::ConstPtr& pathMsg)
 {
-    
+// ambil data dari global planner /move_base/TrajectoryPlannerROS/global_plan
+
     if(_goal_received && !_goal_reached)
     {    
         cout << "PathCB condition" << endl;
@@ -472,7 +473,9 @@ void MPCNode::pathCB(const nav_msgs::Path::ConstPtr& pathMsg)
                 // publish odom path
                 odom_path.header.frame_id = _odom_frame;
                 odom_path.header.stamp = ros::Time::now();
-                _pub_odompath.publish(odom_path);
+                _pub_odompath.publish(odom_path); 
+
+                // Publish path to /mpc_reference --> kyknya ini local planner
             }
             else
             {
@@ -520,15 +523,15 @@ void MPCNode::amclCB(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& a
         }
     }
 }
-
+// ===============  INI FUNGSI BAGIAN KONTROL ==================================================
 
 // Timer: Control Loop (closed loop nonlinear MPC)
 void MPCNode::controlLoopCB(const ros::TimerEvent&)
 {          
     if(_goal_received && !_goal_reached && _path_computed ) //received goal & goal not reached    
     {    
-        nav_msgs::Odometry odom = _odom; 
-        nav_msgs::Path odom_path = _odom_path;   
+        nav_msgs::Odometry odom = _odom;  // ==> DATA /odom
+        nav_msgs::Path odom_path = _odom_path;   // ==> Kayaknya ini local planner ,topic /mpc_reference
 
         // Update system states: X=[x, y, theta, v]
         const double px = odom.pose.pose.position.x; //pose: odom frame
@@ -541,7 +544,7 @@ void MPCNode::controlLoopCB(const ros::TimerEvent&)
         const double w = _w; // steering -> w
         //const double steering = _steering;  // radian
         const double throttle = _throttle; // accel: >0; brake: <0
-        const double dt = _dt;
+        const double dt = _dt;  // dt = 1/frequency controller
         //const double Lf = _Lf;
 
         // Waypoints related parameters

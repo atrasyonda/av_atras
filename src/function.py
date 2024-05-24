@@ -64,7 +64,7 @@ class Kinematic:
             [0,-Tc]
         ]) # matrix 3x2
 
-        print("Ac_pk : ", Ac_pk)
+        
         return Ac_pk, Bc
 
 
@@ -180,17 +180,17 @@ class Kinematic:
 
         print("P", P)
         print("S", S)
-        eigenvalues = np.linalg.eigvals(P)
-        if np.all(eigenvalues >= 0):
-            print("P adalah matriks positif semidefinit.")
-        else:
-            print("P bukan matriks positif semidefinit.")
+        # eigenvalues = np.linalg.eigvals(P)
+        # if np.all(eigenvalues >= 0):
+        #     print("P adalah matriks positif semidefinit.")
+        # else:
+        #     print("P bukan matriks positif semidefinit.")
 
-        eigenvalues = np.linalg.eigvals(S)
-        if np.all(eigenvalues >= 0):
-            print("S adalah matriks positif semidefinit.")
-        else:
-            print("S bukan matriks positif semidefinit.")
+        # eigenvalues = np.linalg.eigvals(S)
+        # if np.all(eigenvalues >= 0):
+        #     print("S adalah matriks positif semidefinit.")
+        # else:
+        #     print("S bukan matriks positif semidefinit.")
 
         return P, outputKi, S
 
@@ -209,7 +209,8 @@ class Kinematic:
             Jk += cp.quad_form(X_k[i], Q_k) + cp.quad_form(delta_u_k[i], R_k)
             if i == 0 :
                 constraints = [X_k[i]==x_k]      # Set initial state
-                U_k[i-1].value = np.zeros([2,1])
+                # U_k[i-1].value = np.zeros([2,1])
+                U_k[i-1].value = u_k
             constraints += [U_k[i] == U_k[i-1]+delta_u_k[i]]
             constraints += [X_k[i+1] == Kinematic.calculate_new_states(Ac_pk, pk[:,i], X_k[i], Bc, U_k[i], r_k[:,:,i])]
             constraints += [delta_u_min <= delta_u_k[i], delta_u_k[i] <= delta_u_max]

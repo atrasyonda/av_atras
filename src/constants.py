@@ -59,27 +59,27 @@ g = 9.8     # konstanta gravitasi (m/s^2)
 
 psi_dot_min= -1  # batas bawah kecepatan anguler (rad/s)
 psi_dot_max= 1   # batas atas kecepatan anguler (rad/s)
-xr_dot_min= 0.1     # batas bawah reference kecepatan linier (m/s)
-xr_dot_max= 3       # batas atas reference kecepatan linier (m/s)
-psi_min= -0.05      # batas bawah sudut orientasi (rad)
-psi_max= 0.05       # batas atas sudut orientasi (rad)
+xr_dot_min= 0     # batas bawah reference kecepatan linier (m/s)
+xr_dot_max= 10       # batas atas reference kecepatan linier (m/s)
+psi_min= -1      # batas bawah sudut orientasi (rad)
+psi_max= 1       # batas atas sudut orientasi (rad)
 
 delta_min = -0.5  # -85 deg batas bawah sudut steering (rad) --> referensi -0.25 (-15 deg)
 delta_max = 0.5   # 1.5  85 deg batas atas sudut steering (rad) --> referensi 0.25 (15 deg)
-x_dot_min = 0.1      # batas bawah kecepatan longitudinal / linier (m/s) --> referensi 0.1
-x_dot_max = 3       # batas atas kecepatan longitudinal / linier (m/s) --> referensi 20
+x_dot_min = -0.1      # batas bawah kecepatan longitudinal / linier (m/s) --> referensi 0.1
+x_dot_max = 1       # batas atas kecepatan longitudinal / linier (m/s) --> referensi 20
 y_dot_min = -1      # batas bawah kecepatan lateral (m/s)
 y_dot_max = 1       # batas atas kecepatan lateral (m/s)
 
-a_min = -0.5         # batas bawah percepatan (m/s^2)
-a_max = 0.5          # batas atas percepatan (m/s^2)
+a_min = -0.2         # batas bawah percepatan (m/s^2)
+a_max = 0.2          # batas atas percepatan (m/s^2)
 
 # Kinematic LPV-MPC Controller Design
 u_max = np.array([[x_dot_max], [psi_dot_max]])  # batas atas input (X_dot dan Psi_dot) --> jurnal 
 u_min = np.array([[x_dot_min], [psi_dot_min]])  # batas bawah input (X_dot dan Psi_dot)--> jurnal
 
-delta_u_max = np.array([[a_max], [0.3]])  # batas atas perubahan input --> jurnal
-delta_u_min = np.array([[a_min], [-0.3]])  # batas bawah perubahan input --> jurnal
+delta_u_max = np.array([[a_max], [0.2]])  # batas atas perubahan input --> jurnal
+delta_u_min = np.array([[a_min], [-0.2]])  # batas bawah perubahan input --> jurnal
 
 Q_k =  0.9*np.diag([0.33, 0.33, 0.33]) # kinematic MPC state weight matrix --> JURNAL
 R_k =  0.1*np.diag([0.8, 0.2])# kinematic MPC input weight matrix --> JURNAL

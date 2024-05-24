@@ -38,7 +38,7 @@
     <!-- Spawn the controllers -->
     <node name="controller_spawner" pkg="controller_manager" type="spawner" args="joint_state_publisher ackermann_steering_controller" output="screen" respawn="false" if="$(eval model == 'ackermann')"/>
 
-    <node name="diff_to_ackermann" pkg="av_atras" type="diff_to_ackermann" output="screen" if="$(eval model == 'ackermann')"/>
+    <node name="diff_to_ackermann" pkg="av_atras" type="diff_to_ackermann" output="screen" if="$(eval model == 'ackermann')"/> 
 
 
 
@@ -83,22 +83,24 @@
         <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" if="$(eval local_planner == 'teb')"/>
         <rosparam file="$(find av_atras)/config/teb_local_costmap_params.yaml" command="load" if="$(eval local_planner == 'teb')"/>
         <rosparam file="$(find av_atras)/config/teb_local_planner_params.yaml" command="load" if="$(eval local_planner == 'teb')" />
-        <param name="controller_frequency" value="10.0" if="$(eval local_planner == 'teb')"/>
+        <!-- <param name="controller_frequency" value="10.0" if="$(eval local_planner == 'teb')"/> -->
         <param name="clearing_rotation_allowed" value="false" if="$(eval local_planner == 'teb')"/>
         
         <rosparam file="$(find av_atras)/config/basic_local_planner_params.yaml" command="load" if="$(eval local_planner == 'basic')" />
+        <rosparam name="" />
         
         <!-- Controller Node -->
-        <remap from="/cmd_vel" to="/move_base/cmd_vel"/>
+        <remap from="/cmd_vel" to="/move_base/cmd_vel"/> 
 
         <!-- Launch a rqt steering GUI for publishing to ackermann_steering_controllesr/cmd_vel (KONTROL SCR MANUAL) -->
-        <!-- <node pkg="rqt_robot_steering" type="rqt_robot_steering" name="rqt_robot_steering" >
-            <param name="default_topic" value="/cmd_vel"/>
-        </node>  -->
 
 
     </node>
-    
+
+    <!-- <node pkg="rqt_robot_steering" type="rqt_robot_steering" name="rqt_robot_steering" >
+        <param name="default_topic" value="/cmd_vel"/>
+    </node> -->
+
     <!--  ************** Visualisation **************  -->
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find av_atras)/rviz/total_rviz_navigation.rviz"/>
 </launch>
