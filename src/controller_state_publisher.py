@@ -44,7 +44,7 @@ class State_Publisher:
         self.latest_odom = data
         # print(data)
 
-        print("Odom Frame", self.latest_odom.header.frame_id)
+        # print("Odom Frame", self.latest_odom.header.frame_id)
         self.odom_x = self.latest_odom.pose.pose.position.x
         self.odom_y = self.latest_odom.pose.pose.position.y
 
@@ -83,7 +83,7 @@ class State_Publisher:
 
     def path_callback(self, message):
         self.latest_plan = message.trajectories[message.selected_trajectory_idx].trajectory
-        print("Path Frame", message.header.frame_id)
+        # print("Path Frame", message.header.frame_id)
         self.path_x = []
         self.path_y = []
         self.path_psi = []
@@ -133,10 +133,13 @@ class State_Publisher:
                 # self.path_psi_dot.append(transformed_angular_velocity[2])
                 self.path_psi_dot.append(data.velocity.angular.z)
 
-
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as e:
             rospy.logerr("Transform failed: %s", str(e))
     
+        # print("Panjang data path X", len(self.path_x))
+        # print("Panjang data path Psi", len(self.path_psi))
+        # print("Panjang reference VC", len(self.path_x_dot))
+        # print("Panjang reference Psidot", len(self.path_psi_dot))
 
         # for data in self.latest_plan:
         #     self.path_x.append(data.pose.position.x)
@@ -194,7 +197,7 @@ class State_Publisher:
         if self.latest_plan is not None and self.latest_odom is not None:
             position_error = np.zeros([3,len(self.path_x)])
             velocity_state = []
-            velocity_reference = np.zeros([2,len(self.path_psi)])
+            velocity_reference = np.zeros([2,len(self.path_x_dot)])
 
             X_error = [self.path_x[i]- self.odom_x for i in range(len(self.path_x))] 
             Y_error = [self.path_y[i] - self.odom_y for i in range(len(self.path_y))] 
@@ -215,8 +218,9 @@ class State_Publisher:
             # X_dot_ref = [self.path_x_dot*np.cos(Psi_error[i]) for i in range(len(self.path_psi))]
             # Psi_dot_ref = [self.path_psi_dot for _ in range(len(X_error))]
 
-            velocity_reference[0] = self.path_x_dot
-            velocity_reference[1] = self.path_psi_dot
+            velocity_reference[0, 0:len(self.path_x_dot)] = self.path_x_dot
+            velocity_reference[1, 0:len(self.path_psi_dot)] = self.path_psi_dot
+            
             # velocity_reference[0,1:] = Vx_ref
             # velocity_reference[1,1:] = Omega_ref 
 

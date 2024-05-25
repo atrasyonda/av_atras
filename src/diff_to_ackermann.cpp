@@ -27,7 +27,8 @@ nav_msgs::Odometry odom;
 tf2_msgs::TFMessage tf_msg;
 
 double min_x = 0.1; //khusus ackermann, robot ga boleh sampe berhenti
-double min_rot = 0.7; //radian (maksudnya maksimal rotasi yang diizinkan)
+// double min_rot = 0.7; //radian (maksudnya maksimal rotasi yang diizinkan)
+double min_rot = 1.4; //radian (maksudnya maksimal rotasi yang diizinkan)
 
 void cmd_vel_callback(const geometry_msgs::Twist &cmd_vel_in)
 {
@@ -35,10 +36,10 @@ void cmd_vel_callback(const geometry_msgs::Twist &cmd_vel_in)
     double rot = cmd_vel_in.angular.z;
     double x = cmd_vel_in.linear.x;
 
-    
-    cmd_vel_out.angular.z = rot/2;
+    cmd_vel_out.angular.z = rot;
+    // cmd_vel_out.angular.z = rot;
 
-    
+    // // ini bukan rumus konversi ackermann gak se :3
     if( (fabs(rot) > min_rot) && x < min_x)
     {
         cmd_vel_out.linear.x = min_x;

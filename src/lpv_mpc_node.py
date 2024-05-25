@@ -17,7 +17,8 @@ from matrix_set_mpc import Ac_pk, Bc, P, S
 def callback(data):
     # Construct Vector of Schedulling Variables
     # pk = [data.psi_dot, data.x_dot_ref, data.psi]
-    N = 10
+    # N = 10
+    N = len(data.x_dot_ref)-1
     print("N_horizon prediction : ", N)
     pk_vector = np.zeros([3,N])
     pk_vector[0] = data.psi_dot_ref[0:N]
@@ -27,8 +28,9 @@ def callback(data):
 
     # Construct the State-Space model
     X_k = np.array([[data.x[0]], [data.y[0]], [data.psi[0]]])  # get current error state 
-    U_k = np.array([[data.x_dot], [data.psi_dot]]) # get previous control signal
+    # U_k = np.array([[data.x_dot], [data.psi_dot]]) # get previous control signal
 
+    U_k = np.array([[data.x_dot], [data.psi_dot]]) # get previous control signal
     # print("current_state = ", X_k)
     # print("current_control_signal = ", U_k) 
      
@@ -55,7 +57,9 @@ def callback(data):
     cmd_vel_msg.angular.z = control_signal[1]
     pub.publish(cmd_vel_msg)
     print("reference V_x from planner", data.x_dot_ref)
+    print("Control V_x from node", u_opt[:][0])
     print("reference Omega from planner", data.psi_dot_ref)
+    print("Control Omega from node", u_opt[:][1])
     rospy.loginfo("Published x_dot: %f and psi_dot: %f to /cmd_vel", control_signal[0], control_signal[1])
 
 
@@ -63,8 +67,8 @@ def callback(data):
 if __name__=='__main__':
     rospy.init_node("lpv_mpc_node")
     rospy.loginfo("Node has been started")
+    rate = rospy.Rate(10)
+    pub = rospy.Publisher("/cmd_vel", Twist, queue_size=10) 
     k_state = rospy.Subscriber("/car/state", state, callback)
-    pub = rospy.Publisher("/cmd_vel", Twist, queue_size=10 )
-    rate = rospy.Rate(100)
     while not rospy.is_shutdown():
         rate.sleep()
