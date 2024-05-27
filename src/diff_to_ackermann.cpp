@@ -7,7 +7,6 @@
 #include "std_msgs/Float64.h"  // Pesan untuk menerbitkan data posisi yaw
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
-#include <mutex>
 
 
 
@@ -27,46 +26,37 @@ nav_msgs::Odometry odom_out;
 nav_msgs::Odometry odom;
 tf2_msgs::TFMessage tf_msg;
 
+double min_x = 0.1; //khusus ackermann, robot ga boleh sampe berhenti
+double min_rot = 0.7; //radian (maksudnya maksimal rotasi yang diizinkan)
+
+
+void cmd_vel_callback(const geometry_msgs::Twist &cmd_vel_in)
+{
+    // cmd_vel_out = cmd_vel_in;
+    double rot = cmd_vel_in.angular.z;
+    double x = cmd_vel_in.linear.x;
+
+    cmd_vel_out.angular.z = rot/2;
+    // cmd_vel_out.angular.z = rot;
+
+    // // ini bukan rumus konversi ackermann gak se :3
+    if( (fabs(rot) > min_rot) && x < min_x)
+    {
+        cmd_vel_out.linear.x = min_x;
+    }
+    else
+    {
+        cmd_vel_out.linear.x = x;
+    }
+
+    pub_cmd_vel.publish(cmd_vel_out);
+}
+
 ros::Time last_cmd_vel_time;
-double yaw_from_imu= 0.0;  // Inisialisasi nilai awal
 double front_steer_angle;
 double rear_wheel_speed;
 double rear_left_wheel_speed;
 double rear_right_wheel_speed;
-double linear_vel=0;
-
-double min_x = 0.1; //khusus ackermann, robot ga boleh sampe berhenti
-double max_angle = 1.4; //radian (maksudnya maksimal rotasi yang diizinkan)
-double delta_steer = 0;
-double a = 0;
-std::mutex cmd_vel_mutex;
-
-void cmd_vel_callback(const geometry_msgs::Twist &cmd_vel_in)
-{
-    std::lock_guard<std::mutex> lock(cmd_vel_mutex);
-    delta_steer = cmd_vel_in.angular.z; // ===> steering angle
-    a = cmd_vel_in.linear.x/10; // ===> acceleration/10 bcz time sample 0.1/0.01 it will send 10 times 
-
-    // PROGRAM LAMA
-    // double rot = cmd_vel_in.angular.z;
-    // double x = cmd_vel_in.linear.x;
-
-    // cmd_vel_out.angular.z = rot;
-    // // cmd_vel_out.angular.z = rot;
-
-    // // // ini bukan rumus konversi ackermann gak se :3
-    // if( (fabs(rot) > max_angle) && x < min_x)
-    // {
-    //     cmd_vel_out.linear.x = min_x;
-    // }
-    // else
-    // {
-    //     cmd_vel_out.linear.x = x;
-    // }
-
-    // pub_cmd_vel.publish(cmd_vel_out);
-}
-
 
 
 void jointStateCallback(const sensor_msgs::JointState::ConstPtr& joint_state_in)
@@ -101,6 +91,7 @@ void jointStateCallback(const sensor_msgs::JointState::ConstPtr& joint_state_in)
 //  ROS_INFO("l_speed: %f, r_speed: %f", rear_left_wheel_speed, rear_right_wheel_speed);
 }
 
+double yaw_from_imu= 0.0;  // Inisialisasi nilai awal
 
 
 
@@ -149,7 +140,7 @@ void odom_callback(const nav_msgs::Odometry &odom_in)
     // ROS_INFO("Delta Time: %f", dt);
     // double linear_vel =  rear_wheel_speed ;
     // double linear_vel =  rear_wheel_speed + (rear_wheel_speed*sin(fabs(front_steer_angle)) * 0.3); //ok
-    linear_vel = (rear_left_wheel_speed+rear_right_wheel_speed)/2.0;
+    double linear_vel = (rear_left_wheel_speed+rear_right_wheel_speed)/2.0;
     double steering_angle = front_steer_angle;
     // double angular_vel =  linear_vel * tan(steering_angle) / 0.4;
 
@@ -199,20 +190,6 @@ void odom_callback(const nav_msgs::Odometry &odom_in)
     pub_odom.publish(odom);
 }
 
-void sendcmd (){
-
-    double current_delta_steer;
-    double current_a;
-    {
-        std::lock_guard<std::mutex> lock(cmd_vel_mutex);
-        current_delta_steer = delta_steer;
-        current_a = a;
-    }
-    cmd_vel_out.linear.x = linear_vel + current_a;
-    cmd_vel_out.angular.z = current_delta_steer;
-    pub_cmd_vel.publish(cmd_vel_out);
-}
-
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "converter");
@@ -233,9 +210,8 @@ int main(int argc, char **argv)
 
     while (ros::ok())
     {
-        ros::spinOnce();
-        sendcmd();
         loop_rate.sleep();
+        ros::spinOnce();
     }
 
     return 0;

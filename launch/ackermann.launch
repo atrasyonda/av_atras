@@ -37,15 +37,11 @@
       
     <!-- Spawn the controllers -->
     <node name="controller_spawner" pkg="controller_manager" type="spawner" args="joint_state_publisher ackermann_steering_controller" output="screen" respawn="false" if="$(eval model == 'ackermann')"/>
-
     <node name="diff_to_ackermann" pkg="av_atras" type="diff_to_ackermann" output="screen" if="$(eval model == 'ackermann')"/> 
-
-
 
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
         <param name="publish_frequency" type="double" value="50.0" />
     </node>
-
 
     <!--  ************** Map **************  -->
     <node name="map_server" pkg="map_server" type="map_server" args="$(find av_atras)/worlds/map.yaml" output="screen">
@@ -54,7 +50,6 @@
 
 
     <!--  ************** Localization **************  -->
-    
     <node pkg="amcl" type="amcl" name="amcl" output="screen">
         <rosparam file="$(find av_atras)/config/amcl_params.yaml" command="load" />
         <param name="initial_pose_x"            value="$(arg x_pos)"/>
@@ -87,15 +82,14 @@
         <param name="clearing_rotation_allowed" value="false" if="$(eval local_planner == 'teb')"/>
         
         <rosparam file="$(find av_atras)/config/basic_local_planner_params.yaml" command="load" if="$(eval local_planner == 'basic')" />
+    </node>
         
-        <!-- Controller Node -->
-        <remap from="/cmd_vel" to="/move_base/cmd_vel"/> 
+    <!-- Controller Node -->
+    <remap from="/cmd_vel" to="/move_base/cmd_vel"/> 
+    <node name="mpc_node" pkg="controller_av" type="mpc_node.py" output="screen" /> 
+
 
         <!-- Launch a rqt steering GUI for publishing to ackermann_steering_controllesr/cmd_vel (KONTROL SCR MANUAL) -->
-
-
-    </node>
-
     <!-- <node pkg="rqt_robot_steering" type="rqt_robot_steering" name="rqt_robot_steering" >
         <param name="default_topic" value="/cmd_vel"/>
     </node> -->
