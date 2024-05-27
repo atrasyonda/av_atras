@@ -30,7 +30,8 @@ laser_likelihood_max_dist: 2.0
 update_min_d: 0.01
 update_min_a: 0.01
 
-resample_interval: 100000000
+# resample_interval: 100000000
+resample_interval: 1
 
 ## Increase tolerance because the computer can get quite busy 
 transform_tolerance: 1.0

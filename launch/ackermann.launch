@@ -87,7 +87,6 @@
         <param name="clearing_rotation_allowed" value="false" if="$(eval local_planner == 'teb')"/>
         
         <rosparam file="$(find av_atras)/config/basic_local_planner_params.yaml" command="load" if="$(eval local_planner == 'basic')" />
-        <rosparam name="" />
         
         <!-- Controller Node -->
         <remap from="/cmd_vel" to="/move_base/cmd_vel"/> 
