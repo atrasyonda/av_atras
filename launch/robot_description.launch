@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+
+<launch>
+        <arg name="model"  default="ackermann"/>  
+        <param name="robot_description" command="$(find xacro)/xacro $(find av_atras)/urdf/ackermann.urdf.xacro" if="$(eval model == 'ackermann')"/>
+
+        <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" output="screen">
+                <param name="use_gui" value="true"/>
+        </node>
+
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+        <node name="rviz" pkg="rviz" type="rviz" args="-d $(find av_atras)/rviz/robot_description.rviz" required="true"/>
+</launch>
