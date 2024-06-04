@@ -13,12 +13,12 @@
     lateral separation between the left and right front steering axes.
     
     For this model:
-    wheel_separation_h = base_length - 2 * axle_offset = 0.4 -> wheelbase (harus 0.142)
-    wheel_separation_w = base_width  + 2 * axle_offset = 0.4 -> wheeltrack (harus 0.144)
+    wheel_separation_h = base_length - front_center_offset - rear_center_offset = 0.15 -> wheelbase (harus 0.142)
+    wheel_separation_w = base_width  + 2 * axle_offset = 0.16 -> wheeltrack (harus 0.144)
 -->
 <robot name="ackermann_bot" xmlns:xacro="http://wiki.ros.org/xacro">
   <!-- Include xacro for inertials, materials and wheels -->
-  <xacro:include filename="$(find av_atras)/urdf/wheel.xacro"/>
+  <xacro:include filename="$(find av_atras)/urdf/wheel_edit.xacro"/>
 
   <xacro:property name="M_PI" value="3.1415926535897931" />
   <xacro:arg name="lidar_visual"    default="true"/>

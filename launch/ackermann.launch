@@ -82,7 +82,7 @@
         
     <!-- Controller Node -->
     <remap from="/cmd_vel" to="/move_base/cmd_vel"/> 
-    <node name="mpc_node" pkg="controller_av" type="mpc_node.py" output="screen" /> 
+    <node name="mpc_node" pkg="av_atras" type="mpc_node.py" output="screen" /> 
 
     <!--  ************** Visualisation **************  -->
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find av_atras)/rviz/total_rviz_navigation.rviz"/>
