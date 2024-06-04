@@ -110,7 +110,6 @@ generate_messages(
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
 # dynamic reconfigure
-generate_dynamic_reconfigure_options(config/MPCPlanner.cfg)
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -151,17 +150,6 @@ catkin_package(
 add_executable(diff_to_ackermann src/diff_to_ackermann.cpp)
 target_link_libraries(diff_to_ackermann ${catkin_LIBRARIES} )
 
-# General MPC_Node 
-add_executable( MPC_Node src/MPC.cpp src/MPC_Node.cpp )
-target_link_libraries(MPC_Node ipopt ${catkin_LIBRARIES} )
-
-# Total navigation with MPC_Node
-add_executable( nav_mpc src/navMPC.cpp src/navMPCNode.cpp )
-target_link_libraries(nav_mpc ipopt ${catkin_LIBRARIES} )
-
-# Local planner with MPC_Node for tracking
-add_executable( tracking_reference_trajectory src/trackRefTraj.cpp src/trackRefTrajNode.cpp )
-target_link_libraries(tracking_reference_trajectory ipopt ${catkin_LIBRARIES} )
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -179,9 +167,6 @@ target_link_libraries(tracking_reference_trajectory ipopt ${catkin_LIBRARIES} )
 add_library(global_planner_lib src/global_planner.cpp)
 target_link_libraries(global_planner_lib ipopt ${catkin_LIBRARIES} )
 
-# MPC Local planner plugin
-add_library(mpc_ros src/mpc_plannner_ros.cpp src/mpc_plannner.cpp)
-target_link_libraries(mpc_ros ipopt ${catkin_LIBRARIES} )
 
 
 #############

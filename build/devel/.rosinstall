@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/atras/ros/catkin_ws/src/av_atras/build/devel/setup.sh

@@ -1,0 +1,8 @@
+prefix=/home/atras/ros/catkin_ws/src/av_atras/build/devel
+
+Name: av_atras
+Description: Description of av_atras
+Version: 0.0.0
+Cflags: -I/home/atras/ros/catkin_ws/src/av_atras/build/devel/include -I/home/atras/ros/catkin_ws/src/av_atras/include
+Libs: -L${prefix}/lib -lav_atras
+Requires: costmap_2d dynamic_reconfigure geometry_msgs move_base roscpp rospy std_msgs tf visualization_msgs pluginlib

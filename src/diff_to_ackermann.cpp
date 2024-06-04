@@ -26,16 +26,27 @@ nav_msgs::Odometry odom_out;
 nav_msgs::Odometry odom;
 tf2_msgs::TFMessage tf_msg;
 
-double min_x = 0.1; //khusus ackermann, robot ga boleh sampe berhenti
-double safe_angle = 0.78; //radian (45 derajat)
-double a = 0;
-double delta = 0;
+double min_x = 0; //khusus ackermann, robot ga boleh sampe berhenti
+// double min_rot = 0.7; //radian (maksudnya maksimal rotasi yang diizinkan)
+double min_rot = 1.4; //radian (maksudnya maksimal rotasi yang diizinkan)
 
 void cmd_vel_callback(const geometry_msgs::Twist &cmd_vel_in)
 {
-    // cmd_vel_out = cmd_vel_in;
-    delta = cmd_vel_in.angular.z;
-    a = cmd_vel_in.linear.x/10;
+    double rot = cmd_vel_in.angular.z;
+    double x = cmd_vel_in.linear.x;
+
+    cmd_vel_out.angular.z = rot;
+    // // ini bukan rumus konversi ackermann gak se :3
+    if( (fabs(rot) > min_rot) && x < min_x)
+    {
+        cmd_vel_out.linear.x = min_x;
+    }
+    else
+    {
+        cmd_vel_out.linear.x = x;
+    }
+
+    pub_cmd_vel.publish(cmd_vel_out);
 }
 
 ros::Time last_cmd_vel_time;
@@ -43,7 +54,6 @@ double front_steer_angle;
 double rear_wheel_speed;
 double rear_left_wheel_speed;
 double rear_right_wheel_speed;
-double linear_vel;
 
 
 void jointStateCallback(const sensor_msgs::JointState::ConstPtr& joint_state_in)
@@ -127,7 +137,7 @@ void odom_callback(const nav_msgs::Odometry &odom_in)
     // ROS_INFO("Delta Time: %f", dt);
     // double linear_vel =  rear_wheel_speed ;
     // double linear_vel =  rear_wheel_speed + (rear_wheel_speed*sin(fabs(front_steer_angle)) * 0.3); //ok
-    linear_vel = (rear_left_wheel_speed+rear_right_wheel_speed)/2.0;
+    double linear_vel = (rear_left_wheel_speed+rear_right_wheel_speed)/2.0;
     double steering_angle = front_steer_angle;
     // double angular_vel =  linear_vel * tan(steering_angle) / 0.4;
 
@@ -177,24 +187,6 @@ void odom_callback(const nav_msgs::Odometry &odom_in)
     pub_odom.publish(odom);
 }
 
-void publish_vel(){
-
-    cmd_vel_out.angular.z = delta;
-    
-
-    if( (fabs(delta) > safe_angle) || linear_vel < min_x)
-    {
-        cmd_vel_out.linear.x = min_x;
-    }
-    else
-    {
-        cmd_vel_out.linear.x = linear_vel + a;
-    }
-
-    pub_cmd_vel.publish(cmd_vel_out);
-}
-
-
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "converter");
@@ -216,7 +208,6 @@ int main(int argc, char **argv)
     while (ros::ok())
     {
         loop_rate.sleep();
-        publish_vel();
         ros::spinOnce();
     }
 
