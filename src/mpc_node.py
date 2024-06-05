@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+"""
+    Modified from https://github.com/zhm-real/MotionPlanning to make it compatible with ros 
+    Author : 
+        Atras Yonda Farizi
+        Engineering Physics
+        Institut Teknologi Sepuluh Nopember
+"""
 import rospy
 import math
 import cvxpy
@@ -460,7 +467,7 @@ if __name__ == '__main__':
     rospy.loginfo("Node has been started")
     rate = rospy.Rate(10)
     mpc_node = MPC_Node()
-    pub = rospy.Publisher("/cmd_vel", Twist, queue_size=10 )
+    pub = rospy.Publisher("/ros/cmd_vel", Twist, queue_size=10 )
     while not rospy.is_shutdown():
         mpc_node.run()
         rate.sleep()

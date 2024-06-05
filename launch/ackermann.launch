@@ -33,12 +33,10 @@
     <!--  ************** Robot model ***************  -->
     <param name="robot_description" command="$(find xacro)/xacro $(find av_atras)/urdf/ackermann.urdf.xacro" if="$(eval model == 'ackermann')"/>
     <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-urdf -model ackermann_bot -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -R $(arg roll) -P $(arg pitch) -Y $(arg yaw) -param robot_description" if="$(eval model == 'ackermann')"/>
-      
-      
-    <!-- Spawn the controllers -->
+    
+    <!-- Spawn the controllers For Simulation-->
     <node name="controller_spawner" pkg="controller_manager" type="spawner" args="joint_state_publisher ackermann_steering_controller" output="screen" respawn="false" if="$(eval model == 'ackermann')"/>
     <node name="diff_to_ackermann" pkg="av_atras" type="diff_to_ackermann" output="screen" if="$(eval model == 'ackermann')"/> 
-    <!-- <node name="ackermann_interface" pkg="controller_av" type="ackermann_interface.py" output="screen" />  -->
 
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
         <param name="publish_frequency" type="double" value="50.0" />
@@ -79,10 +77,16 @@
         
         <rosparam file="$(find av_atras)/config/basic_local_planner_params.yaml" command="load" if="$(eval local_planner == 'basic')" />
     </node>
+    <remap from="/cmd_vel" to="/move_base/cmd_vel"/> 
         
     <!-- Controller Node -->
-    <remap from="/cmd_vel" to="/move_base/cmd_vel"/> 
     <node name="mpc_node" pkg="av_atras" type="mpc_node.py" output="screen" /> 
+
+
+
+    <!-- Spawn Hardware Interface-->
+    <!-- <node name="hardware_interface" pkg="av_atras" type="hardware_interface" output="screen"/>  -->
+
 
     <!--  ************** Visualisation **************  -->
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find av_atras)/rviz/total_rviz_navigation.rviz"/>

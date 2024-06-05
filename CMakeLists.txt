@@ -150,6 +150,8 @@ catkin_package(
 add_executable(diff_to_ackermann src/diff_to_ackermann.cpp)
 target_link_libraries(diff_to_ackermann ${catkin_LIBRARIES} )
 
+# add_executable(hardware_interface src/hardware_interface.cpp)
+# target_link_libraries(hardware_interface ${catkin_LIBRARIES} )
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
