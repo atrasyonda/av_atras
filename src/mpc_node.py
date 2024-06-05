@@ -175,6 +175,8 @@ class MPC_Node:
 
         if self._goal_received and not self._goal_reached:
             rospy.loginfo("Starting Control Loop")
+            global v_opt
+            global delta_exc
             if self.latest_plan is None or self.latest_odom is None:
                 self.skip_loop()
             elif len(self.path_x)<2 or len(self.path_y)<2 or len(self.path_psi)<2 or len(self.path_x_dot)<2 :
@@ -236,6 +238,12 @@ class MPC_Node:
 
     def skip_loop(self):
         print("========== Skip the loop =============")
+        cmd_vel_msg = Twist()
+        # cmd_vel_msg.linear.x = a_exc
+        cmd_vel_msg.linear.x = v_opt[1]
+        cmd_vel_msg.angular.z = delta_exc
+        pub.publish(cmd_vel_msg)
+        rospy.loginfo("Published x_dot: %f and psi_dot: %f to /cmd_vel", cmd_vel_msg.linear.x, cmd_vel_msg.angular.z)
 
 
 class Car_States:
