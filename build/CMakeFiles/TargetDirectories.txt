@@ -62,6 +62,7 @@
 /home/atras/ros/catkin_ws/src/av_atras/build/CMakeFiles/tests.dir
 /home/atras/ros/catkin_ws/src/av_atras/build/CMakeFiles/costmap_2d_generate_messages_nodejs.dir
 /home/atras/ros/catkin_ws/src/av_atras/build/CMakeFiles/std_msgs_generate_messages_lisp.dir
+/home/atras/ros/catkin_ws/src/av_atras/build/CMakeFiles/hardware_interface.dir
 /home/atras/ros/catkin_ws/src/av_atras/build/CMakeFiles/av_atras_generate_messages_eus.dir
 /home/atras/ros/catkin_ws/src/av_atras/build/CMakeFiles/run_tests.dir
 /home/atras/ros/catkin_ws/src/av_atras/build/CMakeFiles/tf_generate_messages_eus.dir

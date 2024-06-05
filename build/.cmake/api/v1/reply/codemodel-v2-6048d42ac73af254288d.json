@@ -126,7 +126,8 @@
 						108,
 						109,
 						110,
-						111
+						111,
+						112
 					]
 				},
 				{
@@ -300,7 +301,8 @@
 						108,
 						109,
 						110,
-						111
+						111,
+						112
 					]
 				},
 				{
@@ -760,6 +762,13 @@
 					"jsonFile" : "target-gtest_main-Debug-57378d866fd05eb83ace.json",
 					"name" : "gtest_main",
 					"projectIndex" : 3
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "hardware_interface::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-hardware_interface-Debug-489b92f8693f2bc16786.json",
+					"name" : "hardware_interface",
+					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,

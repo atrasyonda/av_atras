@@ -922,6 +922,19 @@ std_msgs_generate_messages_lisp/fast:
 .PHONY : std_msgs_generate_messages_lisp/fast
 
 #=============================================================================
+# Target rules for targets named hardware_interface
+
+# Build rule for target.
+hardware_interface: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 hardware_interface
+.PHONY : hardware_interface
+
+# fast build rule for target.
+hardware_interface/fast:
+	$(MAKE) -f CMakeFiles/hardware_interface.dir/build.make CMakeFiles/hardware_interface.dir/build
+.PHONY : hardware_interface/fast
+
+#=============================================================================
 # Target rules for targets named av_atras_generate_messages_eus
 
 # Build rule for target.
@@ -1677,6 +1690,33 @@ src/global_planner.cpp.s:
 	$(MAKE) -f CMakeFiles/global_planner_lib.dir/build.make CMakeFiles/global_planner_lib.dir/src/global_planner.cpp.s
 .PHONY : src/global_planner.cpp.s
 
+src/hardware_interface.o: src/hardware_interface.cpp.o
+
+.PHONY : src/hardware_interface.o
+
+# target to build an object file
+src/hardware_interface.cpp.o:
+	$(MAKE) -f CMakeFiles/hardware_interface.dir/build.make CMakeFiles/hardware_interface.dir/src/hardware_interface.cpp.o
+.PHONY : src/hardware_interface.cpp.o
+
+src/hardware_interface.i: src/hardware_interface.cpp.i
+
+.PHONY : src/hardware_interface.i
+
+# target to preprocess a source file
+src/hardware_interface.cpp.i:
+	$(MAKE) -f CMakeFiles/hardware_interface.dir/build.make CMakeFiles/hardware_interface.dir/src/hardware_interface.cpp.i
+.PHONY : src/hardware_interface.cpp.i
+
+src/hardware_interface.s: src/hardware_interface.cpp.s
+
+.PHONY : src/hardware_interface.s
+
+# target to generate assembly for a file
+src/hardware_interface.cpp.s:
+	$(MAKE) -f CMakeFiles/hardware_interface.dir/build.make CMakeFiles/hardware_interface.dir/src/hardware_interface.cpp.s
+.PHONY : src/hardware_interface.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -1747,6 +1787,7 @@ help:
 	@echo "... tests"
 	@echo "... costmap_2d_generate_messages_nodejs"
 	@echo "... std_msgs_generate_messages_lisp"
+	@echo "... hardware_interface"
 	@echo "... av_atras_generate_messages_eus"
 	@echo "... run_tests"
 	@echo "... tf_generate_messages_eus"
@@ -1808,6 +1849,9 @@ help:
 	@echo "... src/global_planner.o"
 	@echo "... src/global_planner.i"
 	@echo "... src/global_planner.s"
+	@echo "... src/hardware_interface.o"
+	@echo "... src/hardware_interface.i"
+	@echo "... src/hardware_interface.s"
 .PHONY : help
 
 

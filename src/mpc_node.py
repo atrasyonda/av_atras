@@ -54,7 +54,7 @@ class config:
 
 class MPC_Node:
     def __init__(self):
-        rospy.Subscriber("/odom", Odometry, self.odom_callback)
+        rospy.Subscriber("/odom", Odometry, self.odom_callback, None, 100)
         rospy.Subscriber("/move_base/TebLocalPlannerROS/teb_feedback", FeedbackMsg, self.path_callback) 
         rospy.Subscriber('/move_base_simple/goal', PoseStamped, self.goalCB)
         rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amclCB)
