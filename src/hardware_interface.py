@@ -14,6 +14,7 @@ from tf.transformations import euler_from_quaternion
 last_count_l = 0
 last_count_r = 0
 
+
 class Hardware_interface:
     def __init__(self):
         # rospy.Subscriber("/right_ticks", Int16, self.encoder_right_callback, queue_size=100)
@@ -24,6 +25,8 @@ class Hardware_interface:
 
         self.base_speed = 1500
         self.base_angle = 90
+        self.speed = self.base_speed
+        self.angle = self.base_angle
 
         self.ticks_per_meter = 3100 # Original was 2800
 
@@ -71,16 +74,18 @@ class Hardware_interface:
         # cmd.angular.z is the steering angle (rad)
 
         # Calculate the desired speed of each wheel
-        speed = self.base_speed - np.round((cmd.linear.x * 666.66667)/2)
+        self.speed = self.base_speed - np.round((cmd.linear.x * 666.66667)/2)
         # Calculate the desired angle of each wheel
-        angle = self.base_angle + np.rad2deg(cmd.angular.z)
+        self.angle = self.base_angle + np.rad2deg(cmd.angular.z)
+
 
         # Publish the desired speed and angle to the hardware
+    def run(self):
         cmd_msg = Twist()
-        cmd_msg.linear.x = speed
-        cmd_msg.angular.z = angle
-        print("Motor Speed", speed)
-        print("Servo Angle", angle)
+        cmd_msg.linear.x = self.speed
+        cmd_msg.angular.z = self.angle
+        print("Motor Speed", self.speed)
+        print("Servo Angle", self.angle)
         pub.publish(cmd_msg)
 
 
@@ -91,5 +96,6 @@ if __name__=='__main__':
     hardware = Hardware_interface()
     pub = rospy.Publisher("/car/cmd_vel", Twist, queue_size=10 )
     while not rospy.is_shutdown():
-        rospy.spin()
+        # rospy.spin()
+        hardware.run()
         rate.sleep()
