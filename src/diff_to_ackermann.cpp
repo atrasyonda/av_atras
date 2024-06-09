@@ -174,7 +174,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "converter");
     ros::NodeHandle n;
 
-    sub_cmd_vel = n.subscribe("/ros/cmd_vel", 100, cmd_vel_callback);
+    sub_cmd_vel = n.subscribe("/cmd_vel", 100, cmd_vel_callback);
     sub_odom = n.subscribe("/ackermann_steering_controller/odom", 100, odom_callback);
     sub_joint_state = n.subscribe("/joint_states", 100, jointStateCallback);
     sub_imu = n.subscribe("/imu", 100, imuCallback);  // Ganti "/imu_topic" dengan topik IMU yang sesuai

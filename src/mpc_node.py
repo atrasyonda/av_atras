@@ -467,7 +467,7 @@ if __name__ == '__main__':
     rospy.loginfo("Node has been started")
     rate = rospy.Rate(10)
     mpc_node = MPC_Node()
-    pub = rospy.Publisher("/ros/cmd_vel", Twist, queue_size=10 )
+    pub = rospy.Publisher("/cmd_vel", Twist, queue_size=10 )
     while not rospy.is_shutdown():
         mpc_node.run()
         rate.sleep()
