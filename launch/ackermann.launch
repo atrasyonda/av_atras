@@ -85,7 +85,7 @@
 
 
     <!-- Spawn Hardware Interface-->
-    <node name="hardware_interface" pkg="av_atras" type="hardware_interface" output="screen"/> 
+    <!-- <node name="car_hardware_interface" pkg="av_atras" type="car_hardware_interface.py" output="screen"/>  -->
 
 
     <!--  ************** Visualisation **************  -->
