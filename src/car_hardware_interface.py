@@ -74,9 +74,9 @@ class Hardware_interface:
         # cmd.angular.z is the steering angle (rad)
 
         # Calculate the desired speed of each wheel
-        self.speed = self.base_speed - np.round((cmd.linear.x * 666.66667)/2)
+        self.speed = self.base_speed - np.round((cmd.linear.x * 666.66667)/5) # max speed motor 0.4 m/s sedangkan dari simulasi max nya 2 m/s
         # Calculate the desired angle of each wheel
-        self.angle = self.base_angle + np.rad2deg(cmd.angular.z)
+        self.angle = self.base_angle - np.round(np.rad2deg(cmd.angular.z))
 
 
         # Publish the desired speed and angle to the hardware
