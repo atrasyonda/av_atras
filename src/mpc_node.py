@@ -13,7 +13,7 @@ import numpy as np
 import tf
 
 from nav_msgs.msg import Odometry, Path
-from geometry_msgs.msg import Twist, PoseStamped, PoseWithCovarianceStamped
+from geometry_msgs.msg import Twist, PoseStamped, PoseWithCovarianceStamped, Pose
 from teb_local_planner.msg import FeedbackMsg
 from tf.transformations import euler_from_quaternion
 
@@ -67,7 +67,9 @@ class MPC_Node:
         self._goal_reached = False
         self._goal_pos = {'x': 0.0, 'y': 0.0}
         self._goalRadius = 0.05  # Set this to the appropriate radius value
-
+        self.loop = 0
+        self.v_exc = 0
+        self.delta_exc = 0
 
     def odom_callback(self, data):
         self.latest_odom = data
@@ -139,34 +141,34 @@ class MPC_Node:
                 rospy.loginfo("Goal Reached!")
         return self._goal_received, self._goal_reached
 
-    def collect_car_state(self):
-        if self.latest_plan is not None and self.latest_odom is not None:
-            _X_ref = self.path_x
-            _Y_ref = self.path_y
-            _Psi_ref = self.path_psi
-            _X_ref_dot = self.path_x_dot
-            _Psi_ref_dot = self.path_psi_dot
+    # def collect_car_state(self):
+    #     if self.latest_plan is not None and self.latest_odom is not None:
+    #         _X_ref = self.path_x
+    #         _Y_ref = self.path_y
+    #         _Psi_ref = self.path_psi
+    #         _X_ref_dot = self.path_x_dot
+    #         _Psi_ref_dot = self.path_psi_dot
 
-            _X_pos = self.odom_x
-            _Y_pos = self.odom_y
-            _Psi_pos = self.odom_psi
-            X_dot = self.odom_x_dot
-            Y_dot = self.odom_y_dot
-            Psi_dot = self.odom_psi_dot
-        else:
-            rospy.logwarn("Either Path/Odom/Cmd_vel Message is Missing, check /move_base local plan,/odom and /move_base/cmd_vel")
-            _X_ref = [0, 0]
-            _Y_ref = [0, 0]
-            _Psi_ref = [0, 0]
-            _X_ref_dot = [0, 0]
-            _Psi_ref_dot = [0, 0]
-            _X_pos = 0
-            _Y_pos = 0
-            _Psi_pos = 0
-            X_dot = 0
-            Y_dot = 0
-            Psi_dot = 0
-        return _X_ref, _Y_ref, _Psi_ref, _X_pos, _Y_pos, _Psi_pos, X_dot, Y_dot,Psi_dot,_X_ref_dot,_Psi_ref_dot
+    #         _X_pos = self.odom_x
+    #         _Y_pos = self.odom_y
+    #         _Psi_pos = self.odom_psi
+    #         X_dot = self.odom_x_dot
+    #         Y_dot = self.odom_y_dot
+    #         Psi_dot = self.odom_psi_dot
+    #     else:
+    #         rospy.logwarn("Either Path/Odom/Cmd_vel Message is Missing, check /move_base local plan,/odom and /move_base/cmd_vel")
+    #         _X_ref = [0, 0]
+    #         _Y_ref = [0, 0]
+    #         _Psi_ref = [0, 0]
+    #         _X_ref_dot = [0, 0]
+    #         _Psi_ref_dot = [0, 0]
+    #         _X_pos = 0
+    #         _Y_pos = 0
+    #         _Psi_pos = 0
+    #         X_dot = 0
+    #         Y_dot = 0
+    #         Psi_dot = 0
+    #     return _X_ref, _Y_ref, _Psi_ref, _X_pos, _Y_pos, _Psi_pos, X_dot, Y_dot,Psi_dot,_X_ref_dot,_Psi_ref_dot
     
     def run(self):
         if not self._goal_received and not self._goal_reached :
@@ -174,6 +176,7 @@ class MPC_Node:
         
         if not self._goal_received and self._goal_reached:
             rospy.loginfo("Goal is Reached")
+            self.loop = 0
             cmd_vel_msg = Twist()
             cmd_vel_msg.linear.x = 0
             cmd_vel_msg.angular.z = 0
@@ -182,75 +185,153 @@ class MPC_Node:
 
         if self._goal_received and not self._goal_reached:
             rospy.loginfo("Starting Control Loop")
-            global v_opt
-            global delta_exc
             if self.latest_plan is None or self.latest_odom is None:
                 self.skip_loop()
-            elif len(self.path_x)<2 or len(self.path_y)<2 or len(self.path_psi)<2 or len(self.path_x_dot)<2 :
+                print("SKIP CASE 1")
+            elif len(self.path_x)<3 or len(self.path_y)<3 or len(self.path_psi)<3 or len(self.path_x_dot)<3 :
+                print("SKIP CASE 2")
                 self.skip_loop()
             else:
-                _X_ref = self.path_x
-                _Y_ref = self.path_y
-                _Psi_ref = self.path_psi
-                _X_ref_dot = self.path_x_dot
-                # _Psi_ref_dot = self.path_psi_dot
+                self.run_loop()
+                self.publish_state()
 
-                _X_pos = self.odom_x
-                _Y_pos = self.odom_y
-                _Psi_pos = self.odom_psi
-                X_dot = self.odom_x_dot
-                # Y_dot = self.odom_y_dot
-                # Psi_dot = self.odom_psi_dot
+    def publish_state(self):
+        global X_ref,Y_ref,Psi_ref,X_ref_dot
 
-                if (len(_X_ref)>config.T):
-                    N = config.T
-                else:
-                    N = len(_X_ref)-1
+        ref_pose_msg = Pose()
+        odom_pose_msg = Pose()
+        ref_twist_msg = Twist()
+        odom_twist_msg = Twist()
+        print("Loop = ", self.loop)
+        # ==== CASE YG DIKIRIM REF_K-1 DAN ODOM_K ==============
+        # if self.loop == 0 :
+        #     X_ref = self.path_x[0]
+        #     Y_ref = self.path_y[0]
+        #     Psi_ref = self.path_psi[0]
+        #     X_ref_dot = self.path_x_dot[0]
+        # else :
+        #     ref_pose_msg.position.x = X_ref
+        #     ref_pose_msg.position.y = Y_ref
+        #     ref_pose_msg.orientation.z = Psi_ref
+        #     ref_twist_msg.linear.x = X_ref_dot
 
-                # print("ref_x ", len(_X_ref))
-                # print("ref_y ", len(_Y_ref))
-                # print("ref_psi ", len(_Psi_ref))
-                # print("speed_profile", len(_X_ref_dot))
-                delta_opt, a_opt = None, None
-                a_exc, delta_exc = 0.0, 0.0
+        #     odom_pose_msg.position.x = self.odom_x
+        #     odom_pose_msg.position.y = self.odom_y
+        #     odom_pose_msg.orientation.z = self.odom_psi
+        #     odom_twist_msg.linear.x = self.odom_x_dot
 
-                z_ref = np.zeros((config.NX, N + 1))
-                z_ref[0] = _X_ref[0:N+ 1]
-                z_ref[1] = _Y_ref[0:N+ 1]
-                z_ref[2] = _X_ref_dot[0:N+ 1]
-                z_ref[3] = _Psi_ref[0:N+ 1]
+        #     print("ref pose x:", ref_pose_msg.position.x)
+        #     print("ref pose y:", ref_pose_msg.position.y)
+        #     print("ref pose theta:", ref_pose_msg.orientation.z)
+        #     print("ref velocity:", ref_twist_msg.linear.x)
 
-                z0 = [_X_pos, _Y_pos, X_dot, _Psi_pos]
+        #     print("odom pose x:", odom_pose_msg.position.x)
+        #     print("odom pose y:", odom_pose_msg.position.y)
+        #     print("odom pose theta:", odom_pose_msg.orientation.z)
+        #     print("odom velocity:", odom_twist_msg.linear.x)
 
-                a_opt, delta_opt, x_opt, y_opt, yaw_opt, v_opt = linear_mpc_control(z_ref, z0, a_opt, delta_opt, N)
+        #     # Publish message
+        #     ref_pose_pub.publish(ref_pose_msg)
+        #     ref_twist_pub.publish(ref_twist_msg)
+        #     odom_pose_pub.publish(odom_pose_msg)
+        #     odom_twist_pub.publish(odom_twist_msg)
 
-                if delta_opt is not None:
-                    delta_exc, a_exc = delta_opt[0], a_opt[0]
+        #     X_ref = self.path_x[0]
+        #     Y_ref = self.path_y[0]
+        #     Psi_ref = self.path_psi[0]
+        #     X_ref_dot = self.path_x_dot[0]
+        # self.loop = self.loop + 1
 
-                # print("=============")
-                # print("x_opt", x_opt)
-                # print("y_opt", y_opt)
-                # print("yaw_opt", yaw_opt)
-                print("v_opt", v_opt)
-                print("a_opt", a_opt)
-                # print("delta_exc", delta_exc)
-                # print("a_exc", a_exc)
+        # ==== CASE YG DIKIRIM REF_K DAN ODOM_K ==============
+        ref_pose_msg.position.x = self.path_x[0]
+        ref_pose_msg.position.y = self.path_y[0]
+        ref_pose_msg.orientation.z = self.path_psi[0]
+        ref_twist_msg.linear.x = self.path_x_dot[0]
 
-                cmd_vel_msg = Twist()
-                # cmd_vel_msg.linear.x = a_exc
-                cmd_vel_msg.linear.x = v_opt[1]
-                cmd_vel_msg.angular.z = delta_exc
-                pub.publish(cmd_vel_msg)
-                rospy.loginfo("Published x_dot: %f and psi_dot: %f to /cmd_vel", cmd_vel_msg.linear.x, cmd_vel_msg.angular.z)
+        odom_pose_msg.position.x = self.odom_x
+        odom_pose_msg.position.y = self.odom_y
+        odom_pose_msg.orientation.z = self.odom_psi
+        odom_twist_msg.linear.x = self.odom_x_dot
 
-    def skip_loop(self):
-        print("========== Skip the loop =============")
+        print("ref pose x:", ref_pose_msg.position.x)
+        print("ref pose y:", ref_pose_msg.position.y)
+        print("ref pose theta:", ref_pose_msg.orientation.z)
+        print("ref velocity:", ref_twist_msg.linear.x)
+
+        print("odom pose x:", odom_pose_msg.position.x)
+        print("odom pose y:", odom_pose_msg.position.y)
+        print("odom pose theta:", odom_pose_msg.orientation.z)
+        print("odom velocity:", odom_twist_msg.linear.x)
+
+        # Publish message
+        ref_pose_pub.publish(ref_pose_msg)
+        ref_twist_pub.publish(ref_twist_msg)
+        odom_pose_pub.publish(odom_pose_msg)
+        odom_twist_pub.publish(odom_twist_msg)
+
+
+    def run_loop(self):
+        _X_ref = self.path_x
+        _Y_ref = self.path_y
+        _Psi_ref = self.path_psi
+        _X_ref_dot = self.path_x_dot
+
+        _X_pos = self.odom_x
+        _Y_pos = self.odom_y
+        _Psi_pos = self.odom_psi
+        X_dot = self.odom_x_dot
+
+        if (len(_X_ref)>config.T):
+            N = config.T
+        else:
+            N = len(_X_ref)-1
+
+        # print("ref_x ", len(_X_ref))
+        # print("ref_y ", len(_Y_ref))
+        # print("ref_psi ", len(_Psi_ref))
+        # print("speed_profile", len(_X_ref_dot))
+        delta_opt, a_opt = None, None
+        a_exc, delta_exc = 0.0, 0.0
+
+        z_ref = np.zeros((config.NX, N + 1))
+        z_ref[0] = _X_ref[0:N+ 1]
+        z_ref[1] = _Y_ref[0:N+ 1]
+        z_ref[2] = _X_ref_dot[0:N+ 1]
+        z_ref[3] = _Psi_ref[0:N+ 1]
+
+        z0 = [_X_pos, _Y_pos, X_dot, _Psi_pos]
+
+        a_opt, delta_opt, x_opt, y_opt, yaw_opt, v_opt = linear_mpc_control(z_ref, z0, a_opt, delta_opt, N)
+
+        if delta_opt is not None:
+            self.delta_exc = delta_opt[0]
+            self.v_exc = v_opt[1]
+        # print("=============")
+        # print("x_opt", x_opt)
+        # print("y_opt", y_opt)
+        # print("yaw_opt", yaw_opt)
+        print("v_opt", v_opt)
+        print("a_opt", a_opt)
+        # print("delta_exc", delta_exc)
+        # print("a_exc", a_exc)
+
         cmd_vel_msg = Twist()
         # cmd_vel_msg.linear.x = a_exc
         cmd_vel_msg.linear.x = v_opt[1]
         cmd_vel_msg.angular.z = delta_exc
         pub.publish(cmd_vel_msg)
         rospy.loginfo("Published x_dot: %f and psi_dot: %f to /cmd_vel", cmd_vel_msg.linear.x, cmd_vel_msg.angular.z)
+
+    def skip_loop(self):
+        print("========== Skip the loop =============")
+        cmd_vel_msg = Twist()
+        # cmd_vel_msg.linear.x = a_exc
+        cmd_vel_msg.linear.x = self.v_exc
+        cmd_vel_msg.angular.z = self.delta_exc
+        pub.publish(cmd_vel_msg)
+        rospy.loginfo("Published x_dot: %f and psi_dot: %f to /cmd_vel", cmd_vel_msg.linear.x, cmd_vel_msg.angular.z)
+
+    
 
 
 class Car_States:
@@ -354,11 +435,11 @@ def linear_mpc_control(z_ref, z0, a_old, delta_old, N):
         a_rec, delta_rec = a_old[:], delta_old[:]
         a_old, delta_old, x, y, yaw, v = solve_linear_mpc(z_ref, z_bar, z0, delta_old, N)
 
-        du_a_max = max([abs(ia - iao) for ia, iao in zip(a_old, a_rec)])
-        du_d_max = max([abs(ide - ido) for ide, ido in zip(delta_old, delta_rec)])
+        # du_a_max = max([abs(ia - iao) for ia, iao in zip(a_old, a_rec)])
+        # du_d_max = max([abs(ide - ido) for ide, ido in zip(delta_old, delta_rec)])
 
-        if max(du_a_max, du_d_max) < config.du_res:
-            break
+        # if max(du_a_max, du_d_max) < config.du_res:
+        #     break
 
     return a_old, delta_old, x, y, yaw, v
 
@@ -467,7 +548,12 @@ def solve_linear_mpc(z_ref, z_bar, z0, d_bar, N):
         delta = u.value[1, :]
     else:
         print("Cannot solve linear mpc!")
-
+        x = [0.0]*(N + 1)
+        y = [0.0]*(N + 1)
+        v = [0.0]*(N + 1)
+        yaw = [0.0]*(N + 1)
+        a = [0.0] * N
+        delta = [0.0] * N
     return a, delta, x, y, yaw, v
 
 if __name__ == '__main__':
@@ -476,6 +562,10 @@ if __name__ == '__main__':
     rate = rospy.Rate(10)
     mpc_node = MPC_Node()
     pub = rospy.Publisher("/cmd_vel", Twist, queue_size=10 )
+    ref_pose_pub = rospy.Publisher("/state/ref_pose", Pose, queue_size=10 )
+    odom_pose_pub = rospy.Publisher("/state/odom_pose", Pose, queue_size=10 )
+    ref_twist_pub = rospy.Publisher("/state/ref_twist", Twist, queue_size=10 )
+    odom_twist_pub = rospy.Publisher("/state/odom_twist", Twist, queue_size=10 )
     while not rospy.is_shutdown():
         mpc_node.run()
         rate.sleep()

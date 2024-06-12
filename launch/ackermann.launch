@@ -82,8 +82,6 @@
     <!-- Controller Node -->
     <node name="mpc_node" pkg="av_atras" type="mpc_node.py" output="screen" /> 
 
-
-
     <!-- Spawn Hardware Interface-->
     <!-- <node name="car_hardware_interface" pkg="av_atras" type="car_hardware_interface.py" output="screen"/>  -->
 
