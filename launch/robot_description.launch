@@ -2,7 +2,7 @@
 
 <launch>
         <arg name="model"  default="ackermann"/>  
-        <param name="robot_description" command="$(find xacro)/xacro $(find av_atras)/urdf/ackermann.urdf.xacro" if="$(eval model == 'ackermann')"/>
+        <param name="robot_description" command="$(find xacro)/xacro $(find av_atras)/urdf/ackermann_edit.urdf.xacro" if="$(eval model == 'ackermann')"/>
 
         <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" output="screen">
                 <param name="use_gui" value="true"/>

@@ -12,7 +12,7 @@ local_costmap:
   # resolution: 0.2
   width: 8
   height: 8
-  resolution: 0.2
+  resolution: 0.1
   transform_tolerance: 0.5
   
   plugins:

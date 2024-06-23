@@ -5,18 +5,22 @@
     <arg name="model"  default="ackermann"/>  
     <arg name="tf_prefix"  default=""/> 
 
+
     <!--  ************** GAZEBO Simulator ***************  -->
-    <arg name="x_pos" default="0.0"/>
+    <!-- <arg name="x_pos" default="0.0"/>
     <arg name="y_pos" default="0.0"/>
-    <arg name="z_pos" default="0.0"/>
+    <arg name="z_pos" default="0.0"/> -->
+    <arg name="x_pos" default="0"/>
+    <arg name="y_pos" default="0"/>
+    <arg name="z_pos" default="0.5"/>
+
     <arg name="roll" default="0"/>
     <arg name="pitch" default="0"/>
     <arg name="yaw" default="-1.507"/>
     <arg name="gui" default="true"/>
 
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
-        <!-- <arg name="world_name" value="$(find av_atras)/worlds/map.world"/> -->
-        <arg name="world_name" value="$(find autonomous_vehicle)/worlds/$(arg model)_world.world"/> 
+        <arg name="world_name" value="$(find av_atras)/worlds/map.world"/>
         <arg name="paused" value="false"/>
         <arg name="use_sim_time" value="true"/>
         <arg name="gui" value="$(arg gui)"/>
@@ -24,8 +28,22 @@
         <arg name="debug" value="false"/>
     </include>
 
+        <!-- Load ros_control controller configuration parameters -->
+    <rosparam file="$(find av_atras)/config/ctrl_ackermann_steering_controller.yaml" command="load" />
+    <rosparam file="$(find av_atras)/config/ctrl_gains.yaml" command="load"/>
+    <rosparam file="$(find av_atras)/config/ctrl_joint_state_publisher.yaml" command="load" />
+    <rosparam file="$(find av_atras)/config/ctrl_steer_bot_hardware_gazebo.yaml" command="load"/>
+
     <!--  ************** Robot model ***************  -->
-    <!-- <param name="robot_description" command="$(find xacro)/xacro $(find av_atras)/urdf/ackermann.urdf.xacro" if="$(eval model == 'ackermann')"/>
+    <param name="robot_description" command="$(find xacro)/xacro $(find av_atras)/urdf/ackermann_edit.urdf.xacro" if="$(eval model == 'ackermann')"/>
     <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-urdf -model ackermann_bot -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -R $(arg roll) -P $(arg pitch) -Y $(arg yaw) -param robot_description" if="$(eval model == 'ackermann')"/>
-    -->
+    
+    <!-- Spawn the controllers For Simulation-->
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" args="joint_state_publisher ackermann_steering_controller" output="screen" respawn="false" if="$(eval model == 'ackermann')"/>
+    
+
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+        <param name="publish_frequency" type="double" value="50.0" />
+    </node>
+    
 </launch>

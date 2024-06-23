@@ -36,7 +36,7 @@
     
     <!-- Spawn the controllers For Simulation-->
     <node name="controller_spawner" pkg="controller_manager" type="spawner" args="joint_state_publisher ackermann_steering_controller" output="screen" respawn="false" if="$(eval model == 'ackermann')"/>
-    <node name="diff_to_ackermann" pkg="av_atras" type="diff_to_ackermann" output="screen" if="$(eval model == 'ackermann')"/> 
+    
 
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
         <param name="publish_frequency" type="double" value="50.0" />
@@ -56,6 +56,7 @@
         <param name="initial_pose_a"            value="$(arg yaw)"/>
     </node>
 
+    <remap from="/cmd_vel" to="/move_base/cmd_vel"/> 
     <!--  ************** Navigation ***************  -->    
     <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
         <rosparam file="$(find av_atras)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
@@ -72,18 +73,18 @@
         <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" if="$(eval local_planner == 'teb')"/>
         <rosparam file="$(find av_atras)/config/teb_local_costmap_params.yaml" command="load" if="$(eval local_planner == 'teb')"/>
         <rosparam file="$(find av_atras)/config/teb_local_planner_params.yaml" command="load" if="$(eval local_planner == 'teb')" />
-        <!-- <param name="controller_frequency" value="10.0" if="$(eval local_planner == 'teb')"/> -->
+        <param name="controller_frequency" value="10.0" if="$(eval local_planner == 'teb')"/>
         <param name="clearing_rotation_allowed" value="false" if="$(eval local_planner == 'teb')"/>
         
         <rosparam file="$(find av_atras)/config/basic_local_planner_params.yaml" command="load" if="$(eval local_planner == 'basic')" />
     </node>
-    <remap from="/cmd_vel" to="/move_base/cmd_vel"/> 
         
     <!-- Controller Node -->
-    <node name="mpc_node" pkg="av_atras" type="mpc_node.py" output="screen" /> 
+    <!-- <node name="mpc_node" pkg="av_atras" type="mpc_node.py" output="screen" />  -->
+    <node name="diff_to_ackermann" pkg="av_atras" type="diff_to_ackermann" output="screen" if="$(eval model == 'ackermann')"/> 
 
     <!-- Spawn Hardware Interface-->
-    <!-- <node name="car_hardware_interface" pkg="av_atras" type="car_hardware_interface.py" output="screen"/>  -->
+    <node name="car_hardware_interface" pkg="av_atras" type="car_hardware_interface.py" output="screen"/> 
 
 
     <!--  ************** Visualisation **************  -->
