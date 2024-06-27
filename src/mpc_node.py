@@ -11,8 +11,10 @@ import math
 import cvxpy
 import numpy as np
 import tf
+import time
 
-from nav_msgs.msg import Odometry, Path
+from std_msgs.msg import Float32, Int32
+from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist, PoseStamped, PoseWithCovarianceStamped, Pose
 from teb_local_planner.msg import FeedbackMsg
 from tf.transformations import euler_from_quaternion
@@ -76,6 +78,7 @@ class MPC_Node:
         self.v_exc = 0
         self.delta_exc = 0
         self.a_exc = 0
+        self.computation_time =0
 
     def odom_callback(self, data):
         self.latest_odom = data
@@ -150,6 +153,7 @@ class MPC_Node:
         return self._goal_received, self._goal_reached
 
     def run(self):
+        start_time = time.time() 
         if not self._goal_received and not self._goal_reached :
             rospy.loginfo("Waiting for Goal")
         
@@ -163,16 +167,6 @@ class MPC_Node:
             rospy.loginfo("Published x_dot: %f and psi_dot: %f to /cmd_vel", cmd_vel_msg.linear.x, cmd_vel_msg.angular.z)
 
         if self._goal_received and not self._goal_reached:
-            # if self.latest_plan is None or self.latest_odom is None:
-            #     self.skip_loop()
-            #     print("SKIP CASE 1")
-            # elif len(self.path_x)< 3 or len(self.path_y)< 3 or len(self.path_psi)< 3 or len(self.path_x_dot)< 3 :
-            #     print("SKIP CASE 2")
-            #     self.skip_loop()
-            # else:
-            #     self.run_loop()
-            #     self.publish_state()
-
             if self.latest_plan is None or self.latest_odom is None:
                 self.skip_loop()
                 print("SKIP CASE 1")
@@ -185,15 +179,21 @@ class MPC_Node:
                 else:
                     self.skip_loop()
                     print("SKIP CASE 2")
+        
+        self.computation_time = time.time()-start_time
+        print(self.computation_time)
+        computation_pub.publish(self.computation_time)
 
     def publish_state(self):
         global X_ref,Y_ref,Psi_ref,X_ref_dot
-
         ref_pose_msg = Pose()
         odom_pose_msg = Pose()
         ref_twist_msg = Twist()
         odom_twist_msg = Twist()
         control_twist_msg = Twist()
+
+
+
         print("Loop = ", self.loop)
         # ==== CASE YG DIKIRIM REF_K DAN ODOM_K ==============
         # Kasih conditional case aja kalau self.path_x nya kosong, maka ref_pose_msg.position.x = 0
@@ -227,7 +227,7 @@ class MPC_Node:
             # print("odom pose theta:", odom_pose_msg.orientation.z)
             # print("odom velocity:", odom_twist_msg.linear.x)
 
-            # Publish message
+            # Publish state message
             ref_pose_pub.publish(ref_pose_msg)
             ref_twist_pub.publish(ref_twist_msg)
             odom_pose_pub.publish(odom_pose_msg)
@@ -235,6 +235,8 @@ class MPC_Node:
             control_pub.publish(control_twist_msg)
         else :
             print("REFERENCE TIDAK ADA")
+        
+        
 
 
     def run_loop(self):
@@ -247,6 +249,11 @@ class MPC_Node:
         _Y_pos = self.odom_y
         _Psi_pos = self.odom_psi
         X_dot = self.odom_x_dot
+
+        # if (len(_X_ref)>config.T):
+        #     N = config.T
+        # else:
+        #     N = len(_X_ref)-1
 
         if (len(_X_ref)>config.T):
             N = config.T
@@ -534,6 +541,8 @@ if __name__ == '__main__':
     ref_twist_pub = rospy.Publisher("/state/ref_twist", Twist, queue_size=10 )
     odom_twist_pub = rospy.Publisher("/state/odom_twist", Twist, queue_size=10 )
     control_pub = rospy.Publisher("/state/control_twist",Twist,queue_size=10 )
+    computation_pub = rospy.Publisher("/mpc/computation",Float32,queue_size=10)
+    horizon_pub = rospy.Publisher("/mpc/horizon_prediction",Int32,queue_size=10)
     while not rospy.is_shutdown():
         mpc_node.run()
         rate.sleep()
