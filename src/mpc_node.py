@@ -36,7 +36,7 @@ class config:
     Qf = np.diag([1.0, 1.0, 10, 1.0])  # penalty for end state
     Rd = np.diag([1, 10])  # penalty for change of inputs
 
-    iter_max = 5  # max iteration
+    iter_max = 1  # max iteration
     target_speed = 10.0 / 3.6  # target speed
 
     dt = 0.1  # time step --> frequency controller = 10 Hz
@@ -79,6 +79,7 @@ class MPC_Node:
         self.delta_exc = 0
         self.a_exc = 0
         self.computation_time =0
+        self.horizon =0
 
     def odom_callback(self, data):
         self.latest_odom = data
@@ -101,6 +102,8 @@ class MPC_Node:
 
     def path_callback(self, message):
         self.latest_plan = message.trajectories[message.selected_trajectory_idx].trajectory
+        print("=============================================")
+        print("self latest plan", len(self.latest_plan))
         self.path_x = []
         self.path_y = []
         self.path_psi = []
@@ -153,7 +156,7 @@ class MPC_Node:
         return self._goal_received, self._goal_reached
 
     def run(self):
-        start_time = time.time() 
+        start_time = time.process_time_ns() 
         if not self._goal_received and not self._goal_reached :
             rospy.loginfo("Waiting for Goal")
         
@@ -174,13 +177,13 @@ class MPC_Node:
                 print("=====================================================")
                 rospy.loginfo("Starting Control Loop")
                 print("Path X : ", self.path_x)
-                if len(self.path_x)> 2 and len(self.path_y)> 2 and len(self.path_psi)> 2 and len(self.path_x_dot)> 2 :
+                if len(self.path_x)> 3 and len(self.path_y)> 3 and len(self.path_psi)> 3 and len(self.path_x_dot)> 3 :
                     self.run_loop()
                 else:
                     self.skip_loop()
                     print("SKIP CASE 2")
         
-        self.computation_time = time.time()-start_time
+        self.computation_time = time.process_time_ns()-start_time
         print(self.computation_time)
         computation_pub.publish(self.computation_time)
 
@@ -199,16 +202,16 @@ class MPC_Node:
         # Kasih conditional case aja kalau self.path_x nya kosong, maka ref_pose_msg.position.x = 0
         print("Isinya path X", len(self.path_x))
         if (len(self.path_x)!= 0) :
-            if len(self.path_x) > 1 :
-                ref_pose_msg.position.x = float(self.path_x[0])
-                ref_pose_msg.position.y = float(self.path_y[0])
-                ref_pose_msg.orientation.z = float(self.path_psi[0])
-                ref_twist_msg.linear.x = float(self.path_x_dot[0])
-            else :
-                ref_pose_msg.position.x = float(self.path_x[0])
-                ref_pose_msg.position.y = float(self.path_y[0])
-                ref_pose_msg.orientation.z = float(self.path_psi[0])
-                ref_twist_msg.linear.x = float(self.path_x_dot[0])
+            # if len(self.path_x) > 1 :
+            #     ref_pose_msg.position.x = float(self.path_x[0])
+            #     ref_pose_msg.position.y = float(self.path_y[0])
+            #     ref_pose_msg.orientation.z = float(self.path_psi[0])
+            #     ref_twist_msg.linear.x = float(self.path_x_dot[0])
+            # else :
+            ref_pose_msg.position.x = float(self.path_x[0])
+            ref_pose_msg.position.y = float(self.path_y[0])
+            ref_pose_msg.orientation.z = float(self.path_psi[0])
+            ref_twist_msg.linear.x = float(self.path_x_dot[0])
 
             odom_pose_msg.position.x = self.odom_x
             odom_pose_msg.position.y = self.odom_y
@@ -228,6 +231,7 @@ class MPC_Node:
             # print("odom velocity:", odom_twist_msg.linear.x)
 
             # Publish state message
+            horizon_pub.publish(self.horizon)
             ref_pose_pub.publish(ref_pose_msg)
             ref_twist_pub.publish(ref_twist_msg)
             odom_pose_pub.publish(odom_pose_msg)
@@ -250,15 +254,19 @@ class MPC_Node:
         _Psi_pos = self.odom_psi
         X_dot = self.odom_x_dot
 
+        # default jika len > 10
+        print ("panjang horizon max = ", len(_X_ref))
         # if (len(_X_ref)>config.T):
         #     N = config.T
         # else:
         #     N = len(_X_ref)-1
 
         if (len(_X_ref)>config.T):
-            N = config.T
-        else:
             N = len(_X_ref)-1
+        else:
+            N = len(_X_ref)-2
+
+        self.horizon = N
 
         # print("ref_x ", len(_X_ref))
         # print("ref_y ", len(_Y_ref))
@@ -419,6 +427,9 @@ def linear_mpc_control(z_ref, z0, a_old, delta_old, N):
 
         # if max(du_a_max, du_d_max) < config.du_res:
         #     break
+        z_bar = predict_states_in_T_step(z0, a_old, delta_old, z_ref, N)
+        a_rec, delta_rec = a_old[:], delta_old[:]
+        a_old, delta_old, x, y, yaw, v = solve_linear_mpc(z_ref, z_bar, z0, delta_old, N)
 
     return a_old, delta_old, x, y, yaw, v
 
@@ -541,7 +552,7 @@ if __name__ == '__main__':
     ref_twist_pub = rospy.Publisher("/state/ref_twist", Twist, queue_size=10 )
     odom_twist_pub = rospy.Publisher("/state/odom_twist", Twist, queue_size=10 )
     control_pub = rospy.Publisher("/state/control_twist",Twist,queue_size=10 )
-    computation_pub = rospy.Publisher("/mpc/computation",Float32,queue_size=10)
+    computation_pub = rospy.Publisher("/mpc/computation",Int32,queue_size=10)
     horizon_pub = rospy.Publisher("/mpc/horizon_prediction",Int32,queue_size=10)
     while not rospy.is_shutdown():
         mpc_node.run()
