@@ -32,10 +32,10 @@ TebLocalPlannerROS:
   acc_lim_x: 1.2
   acc_lim_theta: 0.7
 
-  # Scene 5(1) : acc lim x = 1 , acc_lim_theta: 0.5, max_vel_theta: 0.7
-  # Scene 6(2) : acc lim x = 1.2 , acc_lim_theta: 0.7, max_vel_theta: 0.7
-  # Scene 2 : acc lim x =0.5 , acc_lim_theta: 0.15, max_vel_theta: 0.7 --> awalnya ini
-  # Scene 3 : acc lim x =0.3 , acc_lim_theta: 0.2, max_vel_theta: 0.6
+  # Scene 5 : acc lim x = 1 , acc_lim_theta: 0.5, max_vel_theta: 0.7
+  # Scene 6(matlab 2) : acc lim x = 1.2 , acc_lim_theta: 0.7, max_vel_theta: 0.7 --> komputasi terbaik N terendah, (N=0.5x)
+  # Scene 2(matlab 3) : acc lim x =0.5 , acc_lim_theta: 0.15, max_vel_theta: 0.7 --> ditengah" (N=0.75x)
+  # Scene 3(matlan 5) : acc lim x =0.3 , acc_lim_theta: 0.2, max_vel_theta: 0.6, --> komputasi terberat, N tertinggi (1x)
   # Scene 4 : acc lim x =0.1 , acc_lim_theta: 0.1, max_vel_theta: 0.3
 
   # ********************** Carlike robot parameters ********************

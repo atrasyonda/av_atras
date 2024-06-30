@@ -20,7 +20,8 @@ from teb_local_planner.msg import FeedbackMsg
 from tf.transformations import euler_from_quaternion
 
 # rosbag record --output-name scene6.bag /state/odom_pose /state/odom_twist /state/ref_pose /state/ref_twist /move_base/cmd_vel_throttle
-# rosrun topic_tools throttle messages /move_base/cmd_vel 10
+
+# rosbag record --output-name compute3.bag /mpc/horizon_prediction /mpc/computation /state/odom_pose /state/odom_t_twist /state/ref_pose /state/ref_twist
 
 class config:
     # System config
@@ -261,11 +262,14 @@ class MPC_Node:
         # else:
         #     N = len(_X_ref)-1
 
-        if (len(_X_ref)>config.T):
-            N = len(_X_ref)-1
+        if (len(_X_ref)>config.T): # batasnya 6
+            # N = Int32((len(_X_ref)-1)*0.75)
+            # print(N)
+            N = int(np.round((len(_X_ref)-1)/2))
         else:
             N = len(_X_ref)-2
 
+        # batas minimal = 3
         self.horizon = N
 
         # print("ref_x ", len(_X_ref))
